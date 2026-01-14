@@ -1,9 +1,17 @@
 import SwiftUI
 import InstaxKit
 
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
+
 struct ContentView: View {
     @State private var printerManager = PrinterManager()
     @State private var selectedImage: CGImage?
+    @State private var fullResolutionImageData: Data?
+    @State private var isLoadingImage: Bool = false
     @State private var scale: CGFloat = 1.0
     @State private var offset: CGSize = .zero
     @State private var orientation: PrintOrientation = .portrait
@@ -36,6 +44,9 @@ struct ContentView: View {
                         PrintProgressOverlay(progress: progress)
                     }
                 }
+            } else if isLoadingImage {
+                // Loading state
+                loadingView
             } else {
                 // Empty state
                 emptyStateView
@@ -72,8 +83,25 @@ struct ContentView: View {
                 .font(.title2)
                 .foregroundStyle(.secondary)
 
-            PhotoPickerButton(selectedImage: $selectedImage)
+            PhotoPickerButton(
+                selectedImage: $selectedImage,
+                fullResolutionData: $fullResolutionImageData,
+                isLoading: $isLoadingImage
+            )
 
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var loadingView: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            ProgressView()
+                .controlSize(.large)
+            Text("Loading image...")
+                .font(.headline)
+                .foregroundStyle(.secondary)
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -82,7 +110,11 @@ struct ContentView: View {
     private var bottomToolbar: some View {
         HStack {
             // Photo picker
-            PhotoPickerButton(selectedImage: $selectedImage)
+            PhotoPickerButton(
+                selectedImage: $selectedImage,
+                fullResolutionData: $fullResolutionImageData,
+                isLoading: $isLoadingImage
+            )
 
             Spacer()
 
@@ -107,15 +139,48 @@ struct ContentView: View {
     }
 
     private func printPhoto() async {
-        guard let image = selectedImage else { return }
+        guard let imageData = fullResolutionImageData,
+              let fullImage = createFullResolutionImage(from: imageData) else { return }
 
         do {
-            let processedImage = processImageForPrint(image)
+            let processedImage = processImageForPrint(fullImage)
             try await printerManager.print(image: processedImage, rotation: orientation.rotation)
         } catch {
             errorMessage = error.localizedDescription
             showError = true
         }
+    }
+
+    private nonisolated func createFullResolutionImage(from data: Data) -> CGImage? {
+        #if os(macOS)
+        guard let nsImage = NSImage(data: data) else { return nil }
+        let width = Int(nsImage.size.width)
+        let height = Int(nsImage.size.height)
+        guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
+              let context = CGContext(
+                data: nil,
+                width: width,
+                height: height,
+                bitsPerComponent: 8,
+                bytesPerRow: width * 4,
+                space: colorSpace,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+              ) else { return nil }
+        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = graphicsContext
+        nsImage.draw(in: CGRect(x: 0, y: 0, width: width, height: height))
+        NSGraphicsContext.restoreGraphicsState()
+        return context.makeImage()
+        #else
+        guard let uiImage = UIImage(data: data) else { return nil }
+        let size = uiImage.size
+        UIGraphicsBeginImageContextWithOptions(size, false, 1.0)
+        uiImage.draw(in: CGRect(origin: .zero, size: size))
+        let normalizedImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return normalizedImage?.cgImage
+        #endif
     }
 
     private func processImageForPrint(_ image: CGImage) -> CGImage {

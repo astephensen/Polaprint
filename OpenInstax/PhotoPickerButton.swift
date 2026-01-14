@@ -9,13 +9,18 @@ import UIKit
 
 struct PhotoPickerButton: View {
     @Binding var selectedImage: CGImage?
+    @Binding var fullResolutionData: Data?
+    @Binding var isLoading: Bool
     @State private var selectedItem: PhotosPickerItem?
+
+    private let maxPreviewSize: CGFloat = 1500
 
     var body: some View {
         PhotosPicker(selection: $selectedItem, matching: .images) {
             Label("Choose Photo", systemImage: "photo.on.rectangle.angled")
         }
         .buttonStyle(.borderedProminent)
+        .disabled(isLoading)
         .onChange(of: selectedItem) { _, newItem in
             Task {
                 await loadImage(from: newItem)
@@ -25,33 +30,61 @@ struct PhotoPickerButton: View {
 
     private func loadImage(from item: PhotosPickerItem?) async {
         guard let item else {
-            selectedImage = nil
+            await MainActor.run {
+                selectedImage = nil
+                fullResolutionData = nil
+            }
             return
+        }
+
+        await MainActor.run {
+            isLoading = true
         }
 
         do {
             if let data = try await item.loadTransferable(type: Data.self) {
-                selectedImage = createCGImage(from: data)
+                // Process on background thread
+                let preview = await Task.detached(priority: .userInitiated) { [self] in
+                    self.createPreviewImage(from: data)
+                }.value
+
+                await MainActor.run {
+                    fullResolutionData = data
+                    selectedImage = preview
+                    isLoading = false
+                }
+            } else {
+                await MainActor.run {
+                    isLoading = false
+                }
             }
         } catch {
             print("Failed to load image: \(error)")
-            selectedImage = nil
+            await MainActor.run {
+                selectedImage = nil
+                fullResolutionData = nil
+                isLoading = false
+            }
         }
     }
 
-    private func createCGImage(from data: Data) -> CGImage? {
+    private nonisolated func createPreviewImage(from data: Data) -> CGImage? {
         #if os(macOS)
         guard let nsImage = NSImage(data: data) else { return nil }
-        // Draw to bitmap context to ensure correct orientation
-        let width = Int(nsImage.size.width)
-        let height = Int(nsImage.size.height)
+        let originalSize = nsImage.size
+
+        // Calculate preview size
+        let scale = min(maxPreviewSize / originalSize.width, maxPreviewSize / originalSize.height, 1.0)
+        let previewWidth = Int(originalSize.width * scale)
+        let previewHeight = Int(originalSize.height * scale)
+
         guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
               let context = CGContext(
                 data: nil,
-                width: width,
-                height: height,
+                width: previewWidth,
+                height: previewHeight,
                 bitsPerComponent: 8,
-                bytesPerRow: width * 4,
+                bytesPerRow: previewWidth * 4,
                 space: colorSpace,
                 bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
               ) else { return nil }
@@ -59,18 +92,22 @@ struct PhotoPickerButton: View {
         let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
         NSGraphicsContext.saveGraphicsState()
         NSGraphicsContext.current = graphicsContext
-        nsImage.draw(in: CGRect(x: 0, y: 0, width: width, height: height))
+        nsImage.draw(in: CGRect(x: 0, y: 0, width: previewWidth, height: previewHeight))
         NSGraphicsContext.restoreGraphicsState()
         return context.makeImage()
         #else
         guard let uiImage = UIImage(data: data) else { return nil }
-        // Draw to bitmap context to apply orientation
-        let size = uiImage.size
-        UIGraphicsBeginImageContextWithOptions(size, false, 1.0)
-        uiImage.draw(in: CGRect(origin: .zero, size: size))
-        let normalizedImage = UIGraphicsGetImageFromCurrentImageContext()
+        let originalSize = uiImage.size
+
+        // Calculate preview size
+        let scale = min(maxPreviewSize / originalSize.width, maxPreviewSize / originalSize.height, 1.0)
+        let previewSize = CGSize(width: originalSize.width * scale, height: originalSize.height * scale)
+
+        UIGraphicsBeginImageContextWithOptions(previewSize, false, 1.0)
+        uiImage.draw(in: CGRect(origin: .zero, size: previewSize))
+        let previewImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-        return normalizedImage?.cgImage
+        return previewImage?.cgImage
         #endif
     }
 }

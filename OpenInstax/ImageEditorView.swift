@@ -23,7 +23,7 @@ struct ImageEditorView: View {
     @State private var lastScale: CGFloat = 1.0
     @State private var lastOffset: CGSize = .zero
 
-    private var aspectRatio: CGFloat {
+    private var cropAspectRatio: CGFloat {
         guard let model = printerModel else { return 0.75 } // Default 3:4
 
         let width = CGFloat(model.imageWidth)
@@ -35,6 +35,10 @@ struct ImageEditorView: View {
         case .landscape:
             return height / width
         }
+    }
+
+    private var imageAspectRatio: CGFloat {
+        CGFloat(image.width) / CGFloat(image.height)
     }
 
     var body: some View {
@@ -51,6 +55,7 @@ struct ImageEditorView: View {
             // Image editor area
             GeometryReader { geometry in
                 let frameSize = calculateFrameSize(in: geometry.size)
+                let imageSize = calculateImageSize(toFill: frameSize)
 
                 ZStack {
                     // Dark background
@@ -59,8 +64,7 @@ struct ImageEditorView: View {
                     // Image with gestures
                     Image(decorative: image, scale: 1.0)
                         .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: frameSize.width * scale, height: frameSize.height * scale)
+                        .frame(width: imageSize.width * scale, height: imageSize.height * scale)
                         .offset(offset)
                         .gesture(dragGesture())
                         .gesture(magnificationGesture())
@@ -90,14 +94,32 @@ struct ImageEditorView: View {
         let maxHeight = containerSize.height * 0.85
 
         var width = maxWidth
-        var height = width / aspectRatio
+        var height = width / cropAspectRatio
 
         if height > maxHeight {
             height = maxHeight
-            width = height * aspectRatio
+            width = height * cropAspectRatio
         }
 
         return CGSize(width: width, height: height)
+    }
+
+    private func calculateImageSize(toFill frameSize: CGSize) -> CGSize {
+        // Calculate the image size needed to fill the crop frame
+        // while maintaining the image's aspect ratio
+        let frameAspect = frameSize.width / frameSize.height
+
+        if imageAspectRatio > frameAspect {
+            // Image is wider than frame - match heights
+            let height = frameSize.height
+            let width = height * imageAspectRatio
+            return CGSize(width: width, height: height)
+        } else {
+            // Image is taller than frame - match widths
+            let width = frameSize.width
+            let height = width / imageAspectRatio
+            return CGSize(width: width, height: height)
+        }
     }
 
     private func dragGesture() -> some Gesture {

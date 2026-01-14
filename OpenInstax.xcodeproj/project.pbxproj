@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -12,14 +12,14 @@
 		A10000010000000000000003 /* PrinterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000003 /* PrinterManager.swift */; };
 		A10000010000000000000004 /* ImageEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000004 /* ImageEditorView.swift */; };
 		A10000010000000000000005 /* PrinterStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000005 /* PrinterStatusView.swift */; };
-		A10000010000000000000006 /* PhotoPickerButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006 /* PhotoPickerButton.swift */; };
+		A10000010000000000000006 /* ImageSourcePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006 /* ImageSourcePicker.swift */; };
 		A10000010000000000000007 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000007 /* Assets.xcassets */; };
 		A10000010000000000000011 /* OpenInstaxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* OpenInstaxApp.swift */; };
 		A10000010000000000000012 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000002 /* ContentView.swift */; };
 		A10000010000000000000013 /* PrinterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000003 /* PrinterManager.swift */; };
 		A10000010000000000000014 /* ImageEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000004 /* ImageEditorView.swift */; };
 		A10000010000000000000015 /* PrinterStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000005 /* PrinterStatusView.swift */; };
-		A10000010000000000000016 /* PhotoPickerButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006 /* PhotoPickerButton.swift */; };
+		A10000010000000000000016 /* ImageSourcePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006 /* ImageSourcePicker.swift */; };
 		A10000010000000000000017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000007 /* Assets.xcassets */; };
 		A10000010000000000000021 /* InstaxKit in Frameworks */ = {isa = PBXBuildFile; productRef = A30000010000000000000001 /* InstaxKit */; };
 		A10000010000000000000022 /* InstaxKit in Frameworks */ = {isa = PBXBuildFile; productRef = A30000010000000000000002 /* InstaxKit */; };
@@ -31,7 +31,7 @@
 		A20000010000000000000003 /* PrinterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrinterManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000004 /* ImageEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEditorView.swift; sourceTree = "<group>"; };
 		A20000010000000000000005 /* PrinterStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrinterStatusView.swift; sourceTree = "<group>"; };
-		A20000010000000000000006 /* PhotoPickerButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoPickerButton.swift; sourceTree = "<group>"; };
+		A20000010000000000000006 /* ImageSourcePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSourcePicker.swift; sourceTree = "<group>"; };
 		A20000010000000000000007 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A20000010000000000000008 /* OpenInstax.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenInstax.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000010000000000000009 /* OpenInstax.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenInstax.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -74,7 +74,7 @@
 				A20000010000000000000003 /* PrinterManager.swift */,
 				A20000010000000000000004 /* ImageEditorView.swift */,
 				A20000010000000000000005 /* PrinterStatusView.swift */,
-				A20000010000000000000006 /* PhotoPickerButton.swift */,
+				A20000010000000000000006 /* ImageSourcePicker.swift */,
 				A20000010000000000000007 /* Assets.xcassets */,
 				A20000010000000000000010 /* OpenInstax.entitlements */,
 			);
@@ -202,7 +202,7 @@
 				A10000010000000000000003 /* PrinterManager.swift in Sources */,
 				A10000010000000000000004 /* ImageEditorView.swift in Sources */,
 				A10000010000000000000005 /* PrinterStatusView.swift in Sources */,
-				A10000010000000000000006 /* PhotoPickerButton.swift in Sources */,
+				A10000010000000000000006 /* ImageSourcePicker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,7 +215,7 @@
 				A10000010000000000000013 /* PrinterManager.swift in Sources */,
 				A10000010000000000000014 /* ImageEditorView.swift in Sources */,
 				A10000010000000000000015 /* PrinterStatusView.swift in Sources */,
-				A10000010000000000000016 /* PhotoPickerButton.swift in Sources */,
+				A10000010000000000000016 /* ImageSourcePicker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -235,6 +235,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = OpenInstax;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
+				INFOPLIST_KEY_NSCameraUsageDescription = "OpenInstax needs camera access to take photos for printing.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -269,6 +270,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = OpenInstax;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
+				INFOPLIST_KEY_NSCameraUsageDescription = "OpenInstax needs camera access to take photos for printing.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -300,8 +302,20 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = OpenInstax;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
@@ -330,8 +344,20 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = OpenInstax;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";

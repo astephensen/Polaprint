@@ -83,7 +83,7 @@ struct ContentView: View {
                 .font(.title2)
                 .foregroundStyle(.secondary)
 
-            PhotoPickerButton(
+            ImageSourcePicker(
                 selectedImage: $selectedImage,
                 fullResolutionData: $fullResolutionImageData,
                 isLoading: $isLoadingImage
@@ -110,7 +110,7 @@ struct ContentView: View {
     private var bottomToolbar: some View {
         HStack {
             // Photo picker
-            PhotoPickerButton(
+            ImageSourcePicker(
                 selectedImage: $selectedImage,
                 fullResolutionData: $fullResolutionImageData,
                 isLoading: $isLoadingImage

@@ -17,14 +17,25 @@ struct ContentView: View {
     @State private var orientation: PrintOrientation = .portrait
     @State private var showError: Bool = false
     @State private var errorMessage: String = ""
+    @State private var showSettings: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
             // Printer status bar at top
-            PrinterStatusView(
-                connectionState: printerManager.connectionState,
-                printProgress: printerManager.printProgress
-            )
+            HStack {
+                PrinterStatusView(
+                    connectionState: printerManager.connectionState,
+                    printProgress: printerManager.printProgress
+                )
+
+                Button {
+                    showSettings = true
+                } label: {
+                    Image(systemName: "gear")
+                        .font(.title2)
+                }
+                .buttonStyle(.borderless)
+            }
             .padding()
 
             Divider()
@@ -68,6 +79,11 @@ struct ContentView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(errorMessage)
+        }
+        .sheet(isPresented: $showSettings) {
+            SettingsView {
+                printerManager.applySettings()
+            }
         }
     }
 

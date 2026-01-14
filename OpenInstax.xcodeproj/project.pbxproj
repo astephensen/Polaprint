@@ -14,6 +14,7 @@
 		A10000010000000000000005 /* PrinterStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000005 /* PrinterStatusView.swift */; };
 		A10000010000000000000006 /* ImageSourcePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006 /* ImageSourcePicker.swift */; };
 		A10000010000000000000007 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000007 /* Assets.xcassets */; };
+		A10000010000000000000008 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000011 /* SettingsView.swift */; };
 		A10000010000000000000011 /* OpenInstaxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* OpenInstaxApp.swift */; };
 		A10000010000000000000012 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000002 /* ContentView.swift */; };
 		A10000010000000000000013 /* PrinterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000003 /* PrinterManager.swift */; };
@@ -21,6 +22,7 @@
 		A10000010000000000000015 /* PrinterStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000005 /* PrinterStatusView.swift */; };
 		A10000010000000000000016 /* ImageSourcePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006 /* ImageSourcePicker.swift */; };
 		A10000010000000000000017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000007 /* Assets.xcassets */; };
+		A10000010000000000000018 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000011 /* SettingsView.swift */; };
 		A10000010000000000000021 /* InstaxKit in Frameworks */ = {isa = PBXBuildFile; productRef = A30000010000000000000001 /* InstaxKit */; };
 		A10000010000000000000022 /* InstaxKit in Frameworks */ = {isa = PBXBuildFile; productRef = A30000010000000000000002 /* InstaxKit */; };
 /* End PBXBuildFile section */
@@ -36,6 +38,7 @@
 		A20000010000000000000008 /* OpenInstax.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenInstax.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000010000000000000009 /* OpenInstax.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenInstax.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000010000000000000010 /* OpenInstax.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OpenInstax.entitlements; sourceTree = "<group>"; };
+		A20000010000000000000011 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +78,7 @@
 				A20000010000000000000004 /* ImageEditorView.swift */,
 				A20000010000000000000005 /* PrinterStatusView.swift */,
 				A20000010000000000000006 /* ImageSourcePicker.swift */,
+				A20000010000000000000011 /* SettingsView.swift */,
 				A20000010000000000000007 /* Assets.xcassets */,
 				A20000010000000000000010 /* OpenInstax.entitlements */,
 			);
@@ -203,6 +207,7 @@
 				A10000010000000000000004 /* ImageEditorView.swift in Sources */,
 				A10000010000000000000005 /* PrinterStatusView.swift in Sources */,
 				A10000010000000000000006 /* ImageSourcePicker.swift in Sources */,
+				A10000010000000000000008 /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -216,6 +221,7 @@
 				A10000010000000000000014 /* ImageEditorView.swift in Sources */,
 				A10000010000000000000015 /* PrinterStatusView.swift in Sources */,
 				A10000010000000000000016 /* ImageSourcePicker.swift in Sources */,
+				A10000010000000000000018 /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

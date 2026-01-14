@@ -34,9 +34,33 @@ final class PrinterManager {
 
     private var printer: InstaxPrinter?
     private var monitorTask: Task<Void, Never>?
-    private var checkInterval: TimeInterval = 3.0
+    private var cachedInfo: PrinterInfo?
+    private var lastInfoFetch: Date?
 
-    init() {}
+    // Short interval when searching, longer when connected
+    private let searchInterval: TimeInterval = 3.0
+    private let connectedRefreshInterval: TimeInterval = 30.0
+
+    init() {
+        loadSettings()
+    }
+
+    func loadSettings() {
+        let settings = PrinterSettings.load()
+        host = settings.host
+        port = settings.port
+        pinCode = settings.pinCode
+    }
+
+    func applySettings() {
+        loadSettings()
+        // Reset connection to use new settings
+        printer = nil
+        printerModel = nil
+        cachedInfo = nil
+        lastInfoFetch = nil
+        connectionState = .searching
+    }
 
     func startMonitoring() {
         stopMonitoring()
@@ -53,7 +77,10 @@ final class PrinterManager {
     private func monitorPrinter() async {
         while !Task.isCancelled {
             await checkPrinterStatus()
-            try? await Task.sleep(for: .seconds(checkInterval))
+
+            // Use shorter interval when searching, longer when connected
+            let interval = (printer != nil) ? connectedRefreshInterval : searchInterval
+            try? await Task.sleep(for: .seconds(interval))
         }
     }
 
@@ -70,15 +97,32 @@ final class PrinterManager {
                 )
                 printer = detectedPrinter
                 printerModel = await detectedPrinter.model
-            }
 
-            if let printer = printer {
-                let info = try await printer.getInfo()
+                // Fetch info on initial connection
+                let info = try await detectedPrinter.getInfo()
+                cachedInfo = info
+                lastInfoFetch = Date()
                 connectionState = .connected(info)
+            } else if let printer = printer {
+                // Only refresh info if enough time has passed
+                let shouldRefresh = lastInfoFetch == nil ||
+                    Date().timeIntervalSince(lastInfoFetch!) >= connectedRefreshInterval
+
+                if shouldRefresh {
+                    let info = try await printer.getInfo()
+                    cachedInfo = info
+                    lastInfoFetch = Date()
+                    connectionState = .connected(info)
+                } else if let cached = cachedInfo {
+                    // Use cached info
+                    connectionState = .connected(cached)
+                }
             }
         } catch {
             printer = nil
             printerModel = nil
+            cachedInfo = nil
+            lastInfoFetch = nil
             let errorMessage = parseError(error)
             if case .error(let currentError) = connectionState, currentError == errorMessage {
                 // Don't update if same error

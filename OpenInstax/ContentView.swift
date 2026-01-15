@@ -136,6 +136,17 @@ struct ContentView: View {
 
             Spacer()
 
+            // Orientation picker
+            Picker("", selection: $orientation) {
+                ForEach(InstaxOrientation.standardOrientations, id: \.self) { orientation in
+                    Text(orientation.displayName).tag(orientation)
+                }
+            }
+            .pickerStyle(.segmented)
+            .fixedSize()
+
+            Spacer()
+
             // Print button
             Button {
                 Task {
@@ -145,6 +156,7 @@ struct ContentView: View {
                 Label("Print", systemImage: "printer.fill")
             }
             .buttonStyle(.borderedProminent)
+            .tint(.blue)
             .disabled(!canPrint)
         }
     }

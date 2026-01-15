@@ -63,58 +63,46 @@ struct ImageEditorView: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
-            // Orientation picker
-            Picker("Orientation", selection: $orientation) {
-                ForEach(InstaxOrientation.standardOrientations, id: \.self) { orientation in
-                    Text(orientation.displayName).tag(orientation)
-                }
+        GeometryReader { geometry in
+            let calculatedFrameSize = calculateFrameSize(in: geometry.size)
+            let imageSize = calculateImageSize(toFill: calculatedFrameSize)
+            let visualOffset = visualAlignmentOffset(for: calculatedFrameSize)
+            let thinBorder = calculatedFrameSize.height * thinBorderRatio
+            let thickBorder = calculatedFrameSize.height * thickBorderRatio
+
+            ZStack {
+                // Dark background
+                Color.black.opacity(0.8)
+
+                // Image - offset includes user pan + visual alignment for polaroid
+                Image(decorative: image, scale: 1.0)
+                    .resizable()
+                    .frame(width: imageSize.width * scale, height: imageSize.height * scale)
+                    .offset(x: offset.width + visualOffset.width,
+                            y: offset.height + visualOffset.height)
+
+                // Polaroid frame overlay (visual only)
+                PolaroidFrameOverlay(
+                    frameSize: calculatedFrameSize,
+                    orientation: orientation,
+                    thinBorder: thinBorder,
+                    thickBorder: thickBorder
+                )
             }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
-
-            // Image editor area
-            GeometryReader { geometry in
-                let calculatedFrameSize = calculateFrameSize(in: geometry.size)
-                let imageSize = calculateImageSize(toFill: calculatedFrameSize)
-                let visualOffset = visualAlignmentOffset(for: calculatedFrameSize)
-                let thinBorder = calculatedFrameSize.height * thinBorderRatio
-                let thickBorder = calculatedFrameSize.height * thickBorderRatio
-
-                ZStack {
-                    // Dark background
-                    Color.black.opacity(0.8)
-
-                    // Image - offset includes user pan + visual alignment for polaroid
-                    Image(decorative: image, scale: 1.0)
-                        .resizable()
-                        .frame(width: imageSize.width * scale, height: imageSize.height * scale)
-                        .offset(x: offset.width + visualOffset.width,
-                                y: offset.height + visualOffset.height)
-
-                    // Polaroid frame overlay (visual only)
-                    PolaroidFrameOverlay(
-                        frameSize: calculatedFrameSize,
-                        orientation: orientation,
-                        thinBorder: thinBorder,
-                        thickBorder: thickBorder
-                    )
-                }
-                .frame(width: geometry.size.width, height: geometry.size.height)
-                .contentShape(Rectangle())
-                .gesture(dragGesture(frameSize: calculatedFrameSize, imageSize: imageSize))
-                .gesture(magnificationGesture(frameSize: calculatedFrameSize, imageSize: imageSize))
-                .clipped()
-                .onAppear { frameSize = calculatedFrameSize }
-                .onChange(of: geometry.size) { _, _ in frameSize = calculatedFrameSize }
-                .onChange(of: orientation) { _, _ in frameSize = calculatedFrameSize }
-            }
+            .frame(width: geometry.size.width, height: geometry.size.height)
+            .contentShape(Rectangle())
+            .gesture(dragGesture(frameSize: calculatedFrameSize, imageSize: imageSize))
+            .gesture(magnificationGesture(frameSize: calculatedFrameSize, imageSize: imageSize))
+            .clipped()
+            .onAppear { frameSize = calculatedFrameSize }
+            .onChange(of: geometry.size) { _, _ in frameSize = calculatedFrameSize }
+            .onChange(of: orientation) { _, _ in frameSize = calculatedFrameSize }
         }
     }
 
     private func calculateFrameSize(in containerSize: CGSize) -> CGSize {
-        let maxWidth = containerSize.width * 0.85
-        let maxHeight = containerSize.height * 0.85
+        let maxWidth = containerSize.width * 0.75
+        let maxHeight = containerSize.height * 0.75
 
         var width = maxWidth
         var height = width / cropAspectRatio

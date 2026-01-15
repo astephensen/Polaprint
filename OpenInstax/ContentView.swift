@@ -289,7 +289,37 @@ struct ContentView: View {
         )
         context.draw(image, in: drawRect)
 
-        return context.makeImage() ?? image
+        guard let croppedImage = context.makeImage() else {
+            return image
+        }
+
+        // Rotate 90° CW for the printer's column-major format
+        return rotate90CW(croppedImage) ?? croppedImage
+    }
+
+    private func rotate90CW(_ image: CGImage) -> CGImage? {
+        let width = image.height  // Swapped for rotation
+        let height = image.width
+
+        guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
+              let context = CGContext(
+                data: nil,
+                width: width,
+                height: height,
+                bitsPerComponent: 8,
+                bytesPerRow: width * 4,
+                space: colorSpace,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+              ) else {
+            return nil
+        }
+
+        // Rotate 90° CW: translate to new origin, then rotate
+        context.translateBy(x: CGFloat(width), y: 0)
+        context.rotate(by: .pi / 2)
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+
+        return context.makeImage()
     }
 }
 

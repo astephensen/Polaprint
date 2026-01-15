@@ -14,7 +14,8 @@ struct ContentView: View {
     @State private var isLoadingImage: Bool = false
     @State private var scale: CGFloat = 1.0
     @State private var offset: CGSize = .zero
-    @State private var orientation: PrintOrientation = .portrait
+    @State private var orientation: InstaxOrientation = .portrait
+    @State private var previewFrameSize: CGSize = .zero
     @State private var showError: Bool = false
     @State private var errorMessage: String = ""
     @State private var showSettings: Bool = false
@@ -48,7 +49,8 @@ struct ContentView: View {
                     printerModel: printerManager.printerModel,
                     scale: $scale,
                     offset: $offset,
-                    orientation: $orientation
+                    orientation: $orientation,
+                    frameSize: $previewFrameSize
                 )
                 .overlay {
                     if printerManager.isPrinting, let progress = printerManager.printProgress {
@@ -160,7 +162,7 @@ struct ContentView: View {
 
         do {
             let processedImage = processImageForPrint(fullImage)
-            try await printerManager.print(image: processedImage, rotation: orientation.rotation)
+            try await printerManager.print(image: processedImage, orientation: orientation)
         } catch {
             errorMessage = error.localizedDescription
             showError = true
@@ -207,10 +209,10 @@ struct ContentView: View {
         let targetHeight: Int
 
         switch orientation {
-        case .portrait:
+        case .portrait, .portraitFlipped:
             targetWidth = model.imageWidth
             targetHeight = model.imageHeight
-        case .landscape:
+        case .landscape, .landscapeFlipped:
             targetWidth = model.imageHeight
             targetHeight = model.imageWidth
         }
@@ -218,25 +220,34 @@ struct ContentView: View {
         let targetAspect = CGFloat(targetWidth) / CGFloat(targetHeight)
         let imageAspect = CGFloat(image.width) / CGFloat(image.height)
 
-        // Calculate the scaled image size to fill the target
-        var scaledWidth: CGFloat
-        var scaledHeight: CGFloat
+        // Calculate the scaled image size to fill the target (same logic as preview)
+        var baseWidth: CGFloat
+        var baseHeight: CGFloat
 
         if imageAspect > targetAspect {
-            scaledHeight = CGFloat(targetHeight)
-            scaledWidth = scaledHeight * imageAspect
+            baseHeight = CGFloat(targetHeight)
+            baseWidth = baseHeight * imageAspect
         } else {
-            scaledWidth = CGFloat(targetWidth)
-            scaledHeight = scaledWidth / imageAspect
+            baseWidth = CGFloat(targetWidth)
+            baseHeight = baseWidth / imageAspect
         }
 
         // Apply user's scale
-        scaledWidth *= scale
-        scaledHeight *= scale
+        let scaledWidth = baseWidth * scale
+        let scaledHeight = baseHeight * scale
 
-        // Calculate offset in image coordinates
-        let offsetX = (CGFloat(targetWidth) - scaledWidth) / 2 + (offset.width / 300 * CGFloat(targetWidth))
-        let offsetY = (CGFloat(targetHeight) - scaledHeight) / 2 + (offset.height / 300 * CGFloat(targetHeight))
+        // Convert offset from preview coordinates to print coordinates
+        // The offset is in screen points relative to the preview frame
+        // We need to scale it proportionally to the print size
+        let scaleFactorX = CGFloat(targetWidth) / max(previewFrameSize.width, 1)
+        let scaleFactorY = CGFloat(targetHeight) / max(previewFrameSize.height, 1)
+
+        let printOffsetX = offset.width * scaleFactorX
+        let printOffsetY = offset.height * scaleFactorY
+
+        // Calculate final position (centered + user offset)
+        let offsetX = (CGFloat(targetWidth) - scaledWidth) / 2 + printOffsetX
+        let offsetY = (CGFloat(targetHeight) - scaledHeight) / 2 + printOffsetY
 
         // Create the output context
         guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),

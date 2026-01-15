@@ -1,15 +1,18 @@
 import SwiftUI
 import InstaxKit
 
-enum PrintOrientation: String, CaseIterable {
-    case portrait = "Portrait"
-    case landscape = "Landscape"
-
-    var rotation: ImageRotation {
+extension InstaxOrientation {
+    var displayName: String {
         switch self {
-        case .portrait: return .none
-        case .landscape: return .clockwise90
+        case .portrait: return "Portrait"
+        case .landscape: return "Landscape"
+        case .portraitFlipped: return "Portrait Flipped"
+        case .landscapeFlipped: return "Landscape Flipped"
         }
+    }
+
+    static var standardOrientations: [InstaxOrientation] {
+        [.portrait, .landscape]
     }
 }
 
@@ -18,24 +21,25 @@ struct ImageEditorView: View {
     let printerModel: PrinterModel?
     @Binding var scale: CGFloat
     @Binding var offset: CGSize
-    @Binding var orientation: PrintOrientation
+    @Binding var orientation: InstaxOrientation
+    @Binding var frameSize: CGSize
 
     @State private var lastScale: CGFloat = 1.0
     @State private var lastOffset: CGSize = .zero
 
-    // Match the polaroid border proportions
-    private let thinBorder: CGFloat = 8
-    private let thickBorder: CGFloat = 28
+    // Polaroid border proportions (visual only - doesn't affect crop/print)
+    private let thinBorderRatio: CGFloat = 0.02
+    private let thickBorderRatio: CGFloat = 0.15
 
-    /// Offset to align image with polaroid cutout
-    private var imageAlignmentOffset: CGSize {
-        let diff = (thickBorder - thinBorder) / 2
+    /// Visual offset to align image with polaroid cutout (NOT stored, display only)
+    private func visualAlignmentOffset(for frameSize: CGSize) -> CGSize {
+        let thin = frameSize.height * thinBorderRatio
+        let thick = frameSize.height * thickBorderRatio
+        let diff = (thick - thin) / 2
         switch orientation {
-        case .portrait:
-            // Thick border at bottom, image cutout is shifted up
+        case .portrait, .portraitFlipped:
             return CGSize(width: 0, height: -diff)
-        case .landscape:
-            // Thick border at left, image cutout is shifted right
+        case .landscape, .landscapeFlipped:
             return CGSize(width: diff, height: 0)
         }
     }
@@ -47,9 +51,9 @@ struct ImageEditorView: View {
         let height = CGFloat(model.imageHeight)
 
         switch orientation {
-        case .portrait:
+        case .portrait, .portraitFlipped:
             return width / height
-        case .landscape:
+        case .landscape, .landscapeFlipped:
             return height / width
         }
     }
@@ -62,8 +66,8 @@ struct ImageEditorView: View {
         VStack(spacing: 16) {
             // Orientation picker
             Picker("Orientation", selection: $orientation) {
-                ForEach(PrintOrientation.allCases, id: \.self) { orientation in
-                    Text(orientation.rawValue).tag(orientation)
+                ForEach(InstaxOrientation.standardOrientations, id: \.self) { orientation in
+                    Text(orientation.displayName).tag(orientation)
                 }
             }
             .pickerStyle(.segmented)
@@ -71,70 +75,52 @@ struct ImageEditorView: View {
 
             // Image editor area
             GeometryReader { geometry in
-                let frameSize = calculateFrameSize(in: geometry.size)
-                let imageSize = calculateImageSize(toFill: frameSize)
+                let calculatedFrameSize = calculateFrameSize(in: geometry.size)
+                let imageSize = calculateImageSize(toFill: calculatedFrameSize)
+                let visualOffset = visualAlignmentOffset(for: calculatedFrameSize)
+                let thinBorder = calculatedFrameSize.height * thinBorderRatio
+                let thickBorder = calculatedFrameSize.height * thickBorderRatio
 
                 ZStack {
                     // Dark background
                     Color.black.opacity(0.8)
 
-                    // Image with gestures
+                    // Image - offset includes user pan + visual alignment for polaroid
                     Image(decorative: image, scale: 1.0)
                         .resizable()
                         .frame(width: imageSize.width * scale, height: imageSize.height * scale)
-                        .offset(x: offset.width + imageAlignmentOffset.width,
-                                y: offset.height + imageAlignmentOffset.height)
+                        .offset(x: offset.width + visualOffset.width,
+                                y: offset.height + visualOffset.height)
 
-                    // Crop frame overlay
-                    CropFrameOverlay(frameSize: frameSize, orientation: orientation)
+                    // Polaroid frame overlay (visual only)
+                    PolaroidFrameOverlay(
+                        frameSize: calculatedFrameSize,
+                        orientation: orientation,
+                        thinBorder: thinBorder,
+                        thickBorder: thickBorder
+                    )
                 }
                 .frame(width: geometry.size.width, height: geometry.size.height)
                 .contentShape(Rectangle())
-                .gesture(dragGesture(frameSize: frameSize, imageSize: imageSize))
-                .gesture(magnificationGesture(frameSize: frameSize, imageSize: imageSize))
+                .gesture(dragGesture(frameSize: calculatedFrameSize, imageSize: imageSize))
+                .gesture(magnificationGesture(frameSize: calculatedFrameSize, imageSize: imageSize))
                 .clipped()
+                .onAppear { frameSize = calculatedFrameSize }
+                .onChange(of: geometry.size) { _, _ in frameSize = calculatedFrameSize }
+                .onChange(of: orientation) { _, _ in frameSize = calculatedFrameSize }
             }
-
-            // Reset button
-            Button("Reset") {
-                withAnimation(.spring(duration: 0.3)) {
-                    scale = 1.0
-                    offset = .zero
-                    lastScale = 1.0
-                    lastOffset = .zero
-                }
-            }
-            .buttonStyle(.bordered)
         }
     }
 
     private func calculateFrameSize(in containerSize: CGSize) -> CGSize {
-        // Account for polaroid borders when calculating available space
-        let horizontalBorders: CGFloat
-        let verticalBorders: CGFloat
+        let maxWidth = containerSize.width * 0.85
+        let maxHeight = containerSize.height * 0.85
 
-        switch orientation {
-        case .portrait:
-            horizontalBorders = thinBorder * 2
-            verticalBorders = thinBorder + thickBorder
-        case .landscape:
-            horizontalBorders = thinBorder + thickBorder
-            verticalBorders = thinBorder * 2
-        }
-
-        // Max space for the entire polaroid (90% of container)
-        let maxPolaroidWidth = containerSize.width * 0.90
-        let maxPolaroidHeight = containerSize.height * 0.90
-
-        // Available space for the image frame inside the polaroid
-        let maxFrameWidth = maxPolaroidWidth - horizontalBorders
-        let maxFrameHeight = maxPolaroidHeight - verticalBorders
-
-        var width = maxFrameWidth
+        var width = maxWidth
         var height = width / cropAspectRatio
 
-        if height > maxFrameHeight {
-            height = maxFrameHeight
+        if height > maxHeight {
+            height = maxHeight
             width = height * cropAspectRatio
         }
 
@@ -142,8 +128,6 @@ struct ImageEditorView: View {
     }
 
     private func calculateImageSize(toFill frameSize: CGSize) -> CGSize {
-        // Calculate the image size needed to fill the crop frame
-        // while maintaining the image's aspect ratio
         let frameAspect = frameSize.width / frameSize.height
 
         if imageAspectRatio > frameAspect {
@@ -163,7 +147,6 @@ struct ImageEditorView: View {
         let scaledWidth = imageSize.width * scale
         let scaledHeight = imageSize.height * scale
 
-        // Calculate maximum allowed offset (image must cover the frame)
         let maxOffsetX = max(0, (scaledWidth - frameSize.width) / 2)
         let maxOffsetY = max(0, (scaledHeight - frameSize.height) / 2)
 
@@ -191,8 +174,7 @@ struct ImageEditorView: View {
         MagnificationGesture()
             .onChanged { value in
                 let newScale = lastScale * value
-                scale = min(max(newScale, 0.5), 5.0)
-                // Re-clamp offset when scale changes
+                scale = min(max(newScale, 1.0), 5.0)
                 offset = clampedOffset(offset, frameSize: frameSize, imageSize: imageSize)
             }
             .onEnded { _ in
@@ -202,22 +184,20 @@ struct ImageEditorView: View {
     }
 }
 
-struct CropFrameOverlay: View {
+struct PolaroidFrameOverlay: View {
     let frameSize: CGSize
-    var orientation: PrintOrientation = .portrait
-
-    // Instax-style border proportions
-    private let thinBorder: CGFloat = 8
-    private let thickBorder: CGFloat = 28
+    let orientation: InstaxOrientation
+    let thinBorder: CGFloat
+    let thickBorder: CGFloat
 
     private var polaroidSize: CGSize {
         switch orientation {
-        case .portrait:
+        case .portrait, .portraitFlipped:
             return CGSize(
                 width: frameSize.width + thinBorder * 2,
                 height: frameSize.height + thinBorder + thickBorder
             )
-        case .landscape:
+        case .landscape, .landscapeFlipped:
             return CGSize(
                 width: frameSize.width + thinBorder + thickBorder,
                 height: frameSize.height + thinBorder * 2
@@ -225,88 +205,66 @@ struct CropFrameOverlay: View {
         }
     }
 
+    /// Offset of the image cutout within the polaroid frame
+    private var cutoutOffset: CGSize {
+        switch orientation {
+        case .portrait, .portraitFlipped:
+            // Image at top, thick border at bottom
+            return CGSize(width: 0, height: -(thickBorder - thinBorder) / 2)
+        case .landscape, .landscapeFlipped:
+            // Image at right, thick border at left
+            return CGSize(width: (thickBorder - thinBorder) / 2, height: 0)
+        }
+    }
+
     var body: some View {
         ZStack {
-            // Semi-transparent overlay with cutout for entire polaroid
-            PolaroidMask(frameSize: polaroidSize)
-                .fill(Color.black.opacity(0.5), style: FillStyle(eoFill: true))
+            // Dark overlay with polaroid-shaped cutout
+            Canvas { context, size in
+                // Fill entire area
+                context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(.black.opacity(0.5)))
 
-            // Polaroid border frame (with hole for image)
-            PolaroidFrame(orientation: orientation, frameSize: frameSize, thinBorder: thinBorder, thickBorder: thickBorder)
-                .fill(Color.white, style: FillStyle(eoFill: true))
-                .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
+                // Cut out the polaroid shape
+                let polaroidRect = CGRect(
+                    x: (size.width - polaroidSize.width) / 2,
+                    y: (size.height - polaroidSize.height) / 2,
+                    width: polaroidSize.width,
+                    height: polaroidSize.height
+                )
+                context.blendMode = .destinationOut
+                context.fill(Path(roundedRect: polaroidRect, cornerRadius: 4), with: .color(.white))
+            }
+
+            // White polaroid frame with image cutout
+            Canvas { context, size in
+                let centerX = size.width / 2
+                let centerY = size.height / 2
+
+                // Outer polaroid rectangle
+                let polaroidRect = CGRect(
+                    x: centerX - polaroidSize.width / 2,
+                    y: centerY - polaroidSize.height / 2,
+                    width: polaroidSize.width,
+                    height: polaroidSize.height
+                )
+
+                // Inner image cutout (offset based on orientation)
+                let imageRect = CGRect(
+                    x: centerX - frameSize.width / 2 + cutoutOffset.width,
+                    y: centerY - frameSize.height / 2 + cutoutOffset.height,
+                    width: frameSize.width,
+                    height: frameSize.height
+                )
+
+                // Draw white frame
+                context.fill(Path(roundedRect: polaroidRect, cornerRadius: 4), with: .color(.white))
+
+                // Cut out the image area
+                context.blendMode = .destinationOut
+                context.fill(Path(imageRect), with: .color(.white))
+            }
+            .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
         }
         .allowsHitTesting(false)
     }
 }
-
-/// Shape that fills everything except the polaroid area
-struct PolaroidMask: Shape {
-    let frameSize: CGSize
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.addRect(rect)
-
-        let polaroidRect = CGRect(
-            x: rect.midX - frameSize.width / 2,
-            y: rect.midY - frameSize.height / 2,
-            width: frameSize.width,
-            height: frameSize.height
-        )
-        path.addRoundedRect(in: polaroidRect, cornerSize: CGSize(width: 4, height: 4))
-
-        return path
-    }
-}
-
-/// Shape that draws the polaroid border with a cutout for the image
-struct PolaroidFrame: Shape {
-    let orientation: PrintOrientation
-    let frameSize: CGSize
-    let thinBorder: CGFloat
-    let thickBorder: CGFloat
-
-    func path(in rect: CGRect) -> Path {
-        let polaroidWidth: CGFloat
-        let polaroidHeight: CGFloat
-        let imageOffsetX: CGFloat
-        let imageOffsetY: CGFloat
-
-        switch orientation {
-        case .portrait:
-            polaroidWidth = frameSize.width + thinBorder * 2
-            polaroidHeight = frameSize.height + thinBorder + thickBorder
-            imageOffsetX = thinBorder
-            imageOffsetY = thinBorder
-        case .landscape:
-            polaroidWidth = frameSize.width + thinBorder + thickBorder
-            polaroidHeight = frameSize.height + thinBorder * 2
-            imageOffsetX = thickBorder
-            imageOffsetY = thinBorder
-        }
-
-        var path = Path()
-
-        // Outer polaroid frame
-        let outerRect = CGRect(
-            x: rect.midX - polaroidWidth / 2,
-            y: rect.midY - polaroidHeight / 2,
-            width: polaroidWidth,
-            height: polaroidHeight
-        )
-        path.addRoundedRect(in: outerRect, cornerSize: CGSize(width: 4, height: 4))
-
-        // Inner image cutout
-        let innerRect = CGRect(
-            x: outerRect.minX + imageOffsetX,
-            y: outerRect.minY + imageOffsetY,
-            width: frameSize.width,
-            height: frameSize.height
-        )
-        path.addRect(innerRect)
-
-        return path
-    }
-}
-

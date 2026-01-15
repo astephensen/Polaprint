@@ -3,43 +3,20 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10000010000000000000001 /* OpenInstaxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* OpenInstaxApp.swift */; };
-		A10000010000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000002 /* ContentView.swift */; };
-		A10000010000000000000003 /* PrinterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000003 /* PrinterManager.swift */; };
-		A10000010000000000000004 /* ImageEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000004 /* ImageEditorView.swift */; };
-		A10000010000000000000005 /* PrinterStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000005 /* PrinterStatusView.swift */; };
-		A10000010000000000000006 /* ImageSourcePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006 /* ImageSourcePicker.swift */; };
-		A10000010000000000000007 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000007 /* Assets.xcassets */; };
-		A10000010000000000000008 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000011 /* SettingsView.swift */; };
-		A10000010000000000000011 /* OpenInstaxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* OpenInstaxApp.swift */; };
-		A10000010000000000000012 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000002 /* ContentView.swift */; };
-		A10000010000000000000013 /* PrinterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000003 /* PrinterManager.swift */; };
-		A10000010000000000000014 /* ImageEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000004 /* ImageEditorView.swift */; };
-		A10000010000000000000015 /* PrinterStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000005 /* PrinterStatusView.swift */; };
-		A10000010000000000000016 /* ImageSourcePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006 /* ImageSourcePicker.swift */; };
-		A10000010000000000000017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000007 /* Assets.xcassets */; };
-		A10000010000000000000018 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000011 /* SettingsView.swift */; };
 		A10000010000000000000021 /* InstaxKit in Frameworks */ = {isa = PBXBuildFile; productRef = A30000010000000000000001 /* InstaxKit */; };
-		A10000010000000000000022 /* InstaxKit in Frameworks */ = {isa = PBXBuildFile; productRef = A30000010000000000000002 /* InstaxKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		A20000010000000000000001 /* OpenInstaxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenInstaxApp.swift; sourceTree = "<group>"; };
-		A20000010000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		A20000010000000000000003 /* PrinterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrinterManager.swift; sourceTree = "<group>"; };
-		A20000010000000000000004 /* ImageEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEditorView.swift; sourceTree = "<group>"; };
-		A20000010000000000000005 /* PrinterStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrinterStatusView.swift; sourceTree = "<group>"; };
-		A20000010000000000000006 /* ImageSourcePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSourcePicker.swift; sourceTree = "<group>"; };
-		A20000010000000000000007 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A20000010000000000000008 /* OpenInstax.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenInstax.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A20000010000000000000009 /* OpenInstax.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenInstax.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A20000010000000000000010 /* OpenInstax.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OpenInstax.entitlements; sourceTree = "<group>"; };
-		A20000010000000000000011 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		E7FE2C172F185719001AB32D /* OpenInstax */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = OpenInstax; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A40000010000000000000001 /* Frameworks */ = {
@@ -50,46 +27,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A40000010000000000000002 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A10000010000000000000022 /* InstaxKit in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		A50000010000000000000001 = {
 			isa = PBXGroup;
 			children = (
-				A50000010000000000000002 /* OpenInstax */,
+				E7FE2C172F185719001AB32D /* OpenInstax */,
 				A50000010000000000000003 /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		A50000010000000000000002 /* OpenInstax */ = {
-			isa = PBXGroup;
-			children = (
-				A20000010000000000000001 /* OpenInstaxApp.swift */,
-				A20000010000000000000002 /* ContentView.swift */,
-				A20000010000000000000003 /* PrinterManager.swift */,
-				A20000010000000000000004 /* ImageEditorView.swift */,
-				A20000010000000000000005 /* PrinterStatusView.swift */,
-				A20000010000000000000006 /* ImageSourcePicker.swift */,
-				A20000010000000000000011 /* SettingsView.swift */,
-				A20000010000000000000007 /* Assets.xcassets */,
-				A20000010000000000000010 /* OpenInstax.entitlements */,
-			);
-			path = OpenInstax;
 			sourceTree = "<group>";
 		};
 		A50000010000000000000003 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				A20000010000000000000008 /* OpenInstax.app */,
-				A20000010000000000000009 /* OpenInstax.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -97,9 +49,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A60000010000000000000001 /* OpenInstax (iOS) */ = {
+		A60000010000000000000001 /* OpenInstax */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A80000010000000000000001 /* Build configuration list for PBXNativeTarget "OpenInstax (iOS)" */;
+			buildConfigurationList = A80000010000000000000001 /* Build configuration list for PBXNativeTarget "OpenInstax" */;
 			buildPhases = (
 				A70000010000000000000001 /* Sources */,
 				A40000010000000000000001 /* Frameworks */,
@@ -109,32 +61,15 @@
 			);
 			dependencies = (
 			);
-			name = "OpenInstax (iOS)";
+			fileSystemSynchronizedGroups = (
+				E7FE2C172F185719001AB32D /* OpenInstax */,
+			);
+			name = OpenInstax;
 			packageProductDependencies = (
 				A30000010000000000000001 /* InstaxKit */,
 			);
 			productName = OpenInstax;
 			productReference = A20000010000000000000008 /* OpenInstax.app */;
-			productType = "com.apple.product-type.application";
-		};
-		A60000010000000000000002 /* OpenInstax (macOS) */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A80000010000000000000002 /* Build configuration list for PBXNativeTarget "OpenInstax (macOS)" */;
-			buildPhases = (
-				A70000010000000000000002 /* Sources */,
-				A40000010000000000000002 /* Frameworks */,
-				A70000010000000000000004 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "OpenInstax (macOS)";
-			packageProductDependencies = (
-				A30000010000000000000002 /* InstaxKit */,
-			);
-			productName = OpenInstax;
-			productReference = A20000010000000000000009 /* OpenInstax.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -148,9 +83,6 @@
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					A60000010000000000000001 = {
-						CreatedOnToolsVersion = 15.0;
-					};
-					A60000010000000000000002 = {
 						CreatedOnToolsVersion = 15.0;
 					};
 				};
@@ -171,8 +103,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A60000010000000000000001 /* OpenInstax (iOS) */,
-				A60000010000000000000002 /* OpenInstax (macOS) */,
+				A60000010000000000000001 /* OpenInstax */,
 			);
 		};
 /* End PBXProject section */
@@ -182,15 +113,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000010000000000000007 /* Assets.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A70000010000000000000004 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A10000010000000000000017 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -201,27 +123,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000010000000000000001 /* OpenInstaxApp.swift in Sources */,
-				A10000010000000000000002 /* ContentView.swift in Sources */,
-				A10000010000000000000003 /* PrinterManager.swift in Sources */,
-				A10000010000000000000004 /* ImageEditorView.swift in Sources */,
-				A10000010000000000000005 /* PrinterStatusView.swift in Sources */,
-				A10000010000000000000006 /* ImageSourcePicker.swift in Sources */,
-				A10000010000000000000008 /* SettingsView.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A70000010000000000000002 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A10000010000000000000011 /* OpenInstaxApp.swift in Sources */,
-				A10000010000000000000012 /* ContentView.swift in Sources */,
-				A10000010000000000000013 /* PrinterManager.swift in Sources */,
-				A10000010000000000000014 /* ImageEditorView.swift in Sources */,
-				A10000010000000000000015 /* PrinterStatusView.swift in Sources */,
-				A10000010000000000000016 /* ImageSourcePicker.swift in Sources */,
-				A10000010000000000000018 /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -236,8 +137,12 @@
 				CODE_SIGN_ENTITLEMENTS = OpenInstax/OpenInstax.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = UF5TK36UX5;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = OpenInstax;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
@@ -252,11 +157,13 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.openinstax.app;
+				PRODUCT_BUNDLE_IDENTIFIER = io.alan.OpenInstax;
 				PRODUCT_NAME = OpenInstax;
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -271,8 +178,12 @@
 				CODE_SIGN_ENTITLEMENTS = OpenInstax/OpenInstax.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = UF5TK36UX5;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = OpenInstax;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
@@ -287,98 +198,16 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.openinstax.app;
+				PRODUCT_BUNDLE_IDENTIFIER = io.alan.OpenInstax;
 				PRODUCT_NAME = OpenInstax;
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		B10000010000000000000003 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = OpenInstax/OpenInstax.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_APP_SANDBOX = YES;
-				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
-				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
-				ENABLE_PREVIEWS = YES;
-				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
-				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
-				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
-				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
-				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
-				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
-				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
-				ENABLE_RESOURCE_ACCESS_USB = NO;
-				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = OpenInstax;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.openinstax.app;
-				PRODUCT_NAME = OpenInstax;
-				SDKROOT = macosx;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		B10000010000000000000004 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = OpenInstax/OpenInstax.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_APP_SANDBOX = YES;
-				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
-				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
-				ENABLE_PREVIEWS = YES;
-				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
-				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
-				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
-				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
-				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
-				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
-				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
-				ENABLE_RESOURCE_ACCESS_USB = NO;
-				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = OpenInstax;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.openinstax.app;
-				PRODUCT_NAME = OpenInstax;
-				SDKROOT = macosx;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -496,20 +325,11 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A80000010000000000000001 /* Build configuration list for PBXNativeTarget "OpenInstax (iOS)" */ = {
+		A80000010000000000000001 /* Build configuration list for PBXNativeTarget "OpenInstax" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B10000010000000000000001 /* Debug */,
 				B10000010000000000000002 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		A80000010000000000000002 /* Build configuration list for PBXNativeTarget "OpenInstax (macOS)" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				B10000010000000000000003 /* Debug */,
-				B10000010000000000000004 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -534,10 +354,6 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		A30000010000000000000001 /* InstaxKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = InstaxKit;
-		};
-		A30000010000000000000002 /* InstaxKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = InstaxKit;
 		};

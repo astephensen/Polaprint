@@ -149,7 +149,7 @@ final class PrinterManager {
         return "Connection failed"
     }
 
-    func print(image: CGImage, rotation: ImageRotation) async throws {
+    func print(image: CGImage, orientation: InstaxOrientation) async throws {
         guard let printer = printer, let model = printerModel else {
             throw PrintError.encodingFailed
         }
@@ -166,7 +166,7 @@ final class PrinterManager {
         }
 
         let encoder = InstaxImageEncoder(model: model)
-        let encodedData = try encoder.encode(image: image, rotation: rotation)
+        let encodedData = try encoder.encode(image: image, orientation: orientation)
 
         try await printer.print(encodedImage: encodedData) { [weak self] progress in
             Task { @MainActor in

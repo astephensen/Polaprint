@@ -16,6 +16,7 @@ struct ImageSourcePicker: View {
     @State private var showFileImporter = false
     #if os(iOS)
     @State private var showCamera = false
+    @State private var showPhotoPicker = false
     #endif
 
     private let maxPreviewSize: CGFloat = 1500
@@ -71,7 +72,9 @@ struct ImageSourcePicker: View {
                 Label("Take Photo", systemImage: "camera")
             }
 
-            PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
+            Button {
+                showPhotoPicker = true
+            } label: {
                 Label("Photo Library", systemImage: "photo.on.rectangle.angled")
             }
 
@@ -86,6 +89,7 @@ struct ImageSourcePicker: View {
         }
         .buttonStyle(.borderedProminent)
         .disabled(isLoading)
+        .photosPicker(isPresented: $showPhotoPicker, selection: $selectedPhotoItem, matching: .images)
         .onChange(of: selectedPhotoItem) { _, newItem in
             Task {
                 await loadFromPhotoPicker(newItem)

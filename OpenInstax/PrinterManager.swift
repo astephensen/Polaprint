@@ -26,7 +26,13 @@ final class PrinterManager {
     var connectionState: PrinterConnectionState = .searching
     var printProgress: PrintProgress?
     var isPrinting: Bool = false
-    private(set) var printerModel: PrinterModel?
+    private(set) var detectedPrinterModel: PrinterModel?
+    private(set) var selectedPrinterModel: PrinterModel = .sp2
+
+    /// Returns the detected printer model if connected, otherwise the user-selected model
+    var printerModel: PrinterModel {
+        detectedPrinterModel ?? selectedPrinterModel
+    }
 
     var host: String = "192.168.0.251"
     var port: UInt16 = 8080
@@ -50,13 +56,14 @@ final class PrinterManager {
         host = settings.host
         port = settings.port
         pinCode = settings.pinCode
+        selectedPrinterModel = PrinterSettings.loadPrinterModel()
     }
 
     func applySettings() {
         loadSettings()
         // Reset connection to use new settings
         printer = nil
-        printerModel = nil
+        detectedPrinterModel = nil
         cachedInfo = nil
         lastInfoFetch = nil
         connectionState = .searching
@@ -96,7 +103,7 @@ final class PrinterManager {
                     pinCode: pinCode
                 )
                 printer = detectedPrinter
-                printerModel = await detectedPrinter.model
+                detectedPrinterModel = await detectedPrinter.model
 
                 // Fetch info on initial connection
                 let info = try await detectedPrinter.getInfo()
@@ -120,7 +127,7 @@ final class PrinterManager {
             }
         } catch {
             printer = nil
-            printerModel = nil
+            detectedPrinterModel = nil
             cachedInfo = nil
             lastInfoFetch = nil
             let errorMessage = parseError(error)
@@ -150,7 +157,7 @@ final class PrinterManager {
     }
 
     func print(image: CGImage, orientation: InstaxOrientation) async throws {
-        guard let printer = printer, let model = printerModel else {
+        guard let printer = printer else {
             throw PrintError.encodingFailed
         }
 
@@ -165,7 +172,7 @@ final class PrinterManager {
             }
         }
 
-        let encoder = InstaxImageEncoder(model: model)
+        let encoder = InstaxImageEncoder(model: printerModel)
         let encodedData = try encoder.encode(image: image, orientation: orientation)
 
         try await printer.print(encodedImage: encodedData) { [weak self] progress in

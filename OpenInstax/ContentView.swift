@@ -215,7 +215,7 @@ struct ContentView: View {
 
     private func processImageForPrint(_ image: CGImage) -> CGImage {
         // Apply the scale and offset transformations to create the final image
-        guard let model = printerManager.printerModel else { return image }
+        let model = printerManager.printerModel
 
         let targetWidth: Int
         let targetHeight: Int

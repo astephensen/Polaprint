@@ -18,7 +18,7 @@ extension InstaxOrientation {
 
 struct ImageEditorView: View {
     let image: CGImage
-    let printerModel: PrinterModel?
+    let printerModel: PrinterModel
     @Binding var scale: CGFloat
     @Binding var offset: CGSize
     @Binding var orientation: InstaxOrientation
@@ -45,10 +45,8 @@ struct ImageEditorView: View {
     }
 
     private var cropAspectRatio: CGFloat {
-        guard let model = printerModel else { return 0.75 } // Default 3:4
-
-        let width = CGFloat(model.imageWidth)
-        let height = CGFloat(model.imageHeight)
+        let width = CGFloat(printerModel.imageWidth)
+        let height = CGFloat(printerModel.imageHeight)
 
         switch orientation {
         case .portrait, .portraitFlipped:

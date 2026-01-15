@@ -1,4 +1,5 @@
 import SwiftUI
+import InstaxKit
 
 enum ConnectionType: String, CaseIterable, Identifiable {
     case `default` = "default"
@@ -29,10 +30,12 @@ struct PrinterSettings {
     static let customHostKey = "printerCustomHost"
     static let customPortKey = "printerCustomPort"
     static let pinCodeKey = "printerPinCode"
+    static let printerModelKey = "printerModel"
 
     static let defaultHost = "192.168.0.251"
     static let defaultPort: UInt16 = 8080
     static let defaultPinCode: UInt16 = 1111
+    static let defaultPrinterModel: PrinterModel = .sp2
 
     static func load() -> (host: String, port: UInt16, pinCode: UInt16) {
         let connectionType = ConnectionType(rawValue: UserDefaults.standard.string(forKey: connectionTypeKey) ?? "default") ?? .default
@@ -50,6 +53,28 @@ struct PrinterSettings {
             return (customHost, customPort > 0 ? customPort : defaultPort, effectivePinCode)
         }
     }
+
+    static func loadPrinterModel() -> PrinterModel {
+        guard let savedModel = UserDefaults.standard.string(forKey: printerModelKey) else {
+            return defaultPrinterModel
+        }
+        switch savedModel {
+        case "sp1": return .sp1
+        case "sp2": return .sp2
+        case "sp3": return .sp3
+        default: return defaultPrinterModel
+        }
+    }
+
+    static func savePrinterModel(_ model: PrinterModel) {
+        let modelString: String
+        switch model {
+        case .sp1: modelString = "sp1"
+        case .sp2: modelString = "sp2"
+        case .sp3: modelString = "sp3"
+        }
+        UserDefaults.standard.set(modelString, forKey: printerModelKey)
+    }
 }
 
 struct SettingsView: View {
@@ -59,6 +84,7 @@ struct SettingsView: View {
     @State private var customHost: String
     @State private var customPort: String
     @State private var pinCode: String
+    @State private var selectedPrinterModel: PrinterModel
 
     var onSettingsChanged: () -> Void
 
@@ -74,6 +100,7 @@ struct SettingsView: View {
         _customHost = State(initialValue: savedCustomHost)
         _customPort = State(initialValue: savedCustomPort > 0 ? String(savedCustomPort) : String(PrinterSettings.defaultPort))
         _pinCode = State(initialValue: savedPinCode > 0 ? String(savedPinCode) : String(PrinterSettings.defaultPinCode))
+        _selectedPrinterModel = State(initialValue: PrinterSettings.loadPrinterModel())
     }
 
     var body: some View {
@@ -122,6 +149,18 @@ struct SettingsView: View {
                 } footer: {
                     Text("The PIN code displayed on your printer.")
                 }
+
+                Section {
+                    Picker("Printer Model", selection: $selectedPrinterModel) {
+                        Text("SP-1 (Mini)").tag(PrinterModel.sp1)
+                        Text("SP-2 (Mini)").tag(PrinterModel.sp2)
+                        Text("SP-3 (Square)").tag(PrinterModel.sp3)
+                    }
+                } header: {
+                    Text("Printer Model")
+                } footer: {
+                    Text("Select your Instax printer model. This will be overridden when a printer is connected.")
+                }
             }
             .formStyle(.grouped)
             .navigationTitle("Settings")
@@ -157,6 +196,7 @@ struct SettingsView: View {
         if let pin = UInt16(pinCode) {
             UserDefaults.standard.set(Int(pin), forKey: PrinterSettings.pinCodeKey)
         }
+        PrinterSettings.savePrinterModel(selectedPrinterModel)
     }
 }
 

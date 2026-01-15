@@ -14,7 +14,6 @@ struct ContentView: View {
     @State private var isLoadingImage: Bool = false
     @State private var scale: CGFloat = 1.0
     @State private var offset: CGSize = .zero
-    @State private var orientation: InstaxOrientation = .portrait
     @State private var previewFrameSize: CGSize = .zero
     @State private var showError: Bool = false
     @State private var errorMessage: String = ""
@@ -49,7 +48,6 @@ struct ContentView: View {
                     printerModel: printerManager.printerModel,
                     scale: $scale,
                     offset: $offset,
-                    orientation: $orientation,
                     frameSize: $previewFrameSize
                 )
                 .overlay {
@@ -136,17 +134,6 @@ struct ContentView: View {
 
             Spacer()
 
-            // Orientation picker
-            Picker("", selection: $orientation) {
-                ForEach(InstaxOrientation.standardOrientations, id: \.self) { orientation in
-                    Text(orientation.displayName).tag(orientation)
-                }
-            }
-            .pickerStyle(.segmented)
-            .fixedSize()
-
-            Spacer()
-
             // Print button
             Button {
                 Task {
@@ -174,7 +161,7 @@ struct ContentView: View {
 
         do {
             let processedImage = processImageForPrint(fullImage)
-            try await printerManager.print(image: processedImage, orientation: orientation)
+            try await printerManager.print(image: processedImage)
         } catch {
             errorMessage = error.localizedDescription
             showError = true
@@ -217,17 +204,8 @@ struct ContentView: View {
         // Apply the scale and offset transformations to create the final image
         let model = printerManager.printerModel
 
-        let targetWidth: Int
-        let targetHeight: Int
-
-        switch orientation {
-        case .portrait, .portraitFlipped:
-            targetWidth = model.imageWidth
-            targetHeight = model.imageHeight
-        case .landscape, .landscapeFlipped:
-            targetWidth = model.imageHeight
-            targetHeight = model.imageWidth
-        }
+        let targetWidth = model.imageWidth
+        let targetHeight = model.imageHeight
 
         let targetAspect = CGFloat(targetWidth) / CGFloat(targetHeight)
         let imageAspect = CGFloat(image.width) / CGFloat(image.height)
@@ -293,33 +271,7 @@ struct ContentView: View {
             return image
         }
 
-        // Rotate 90° CW for the printer's column-major format
-        return rotate90CW(croppedImage) ?? croppedImage
-    }
-
-    private func rotate90CW(_ image: CGImage) -> CGImage? {
-        let width = image.height  // Swapped for rotation
-        let height = image.width
-
-        guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
-              let context = CGContext(
-                data: nil,
-                width: width,
-                height: height,
-                bitsPerComponent: 8,
-                bytesPerRow: width * 4,
-                space: colorSpace,
-                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-              ) else {
-            return nil
-        }
-
-        // Rotate 90° CW: translate to new origin, then rotate
-        context.translateBy(x: CGFloat(width), y: 0)
-        context.rotate(by: .pi / 2)
-        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
-
-        return context.makeImage()
+        return croppedImage
     }
 }
 

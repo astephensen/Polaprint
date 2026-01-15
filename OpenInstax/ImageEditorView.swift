@@ -2,18 +2,18 @@ import SwiftUI
 import InstaxKit
 
 extension InstaxOrientation {
-    var displayName: String {
-        switch self {
-        case .portrait: return "Portrait"
-        case .landscape: return "Landscape"
-        case .portraitFlipped: return "Portrait Flipped"
-        case .landscapeFlipped: return "Landscape Flipped"
-        }
+  var displayName: String {
+    switch self {
+    case .portrait: "Portrait"
+    case .landscape: "Landscape"
+    case .portraitFlipped: "Portrait Flipped"
+    case .landscapeFlipped: "Landscape Flipped"
     }
+  }
 
-    static var standardOrientations: [InstaxOrientation] {
-        [.portrait, .landscape]
-    }
+  static var standardOrientations: [InstaxOrientation] {
+    [.portrait, .landscape]
+  }
 }
 
 struct ImageEditorView: View {

@@ -2,15 +2,35 @@ import SwiftUI
 import InstaxKit
 
 /// Print orientation
-enum Orientation: String, CaseIterable {
-    case portrait
-    case landscape
+enum Orientation: Int, CaseIterable {
+    case portrait = 0
+    case landscape = 90
+    case portraitFlipped = 180
+    case landscapeFlipped = 270
 
-    var displayName: String {
+    /// Rotate clockwise by 90 degrees
+    func rotatedCW() -> Orientation {
         switch self {
-        case .portrait: "Portrait"
-        case .landscape: "Landscape"
+        case .portrait: .landscape
+        case .landscape: .portraitFlipped
+        case .portraitFlipped: .landscapeFlipped
+        case .landscapeFlipped: .portrait
         }
+    }
+
+    /// Rotate counter-clockwise by 90 degrees
+    func rotatedCCW() -> Orientation {
+        switch self {
+        case .portrait: .landscapeFlipped
+        case .landscape: .portrait
+        case .portraitFlipped: .landscape
+        case .landscapeFlipped: .portraitFlipped
+        }
+    }
+
+    /// Whether this is a landscape orientation
+    var isLandscape: Bool {
+        self == .landscape || self == .landscapeFlipped
     }
 }
 
@@ -39,17 +59,20 @@ struct ImageEditorView: View {
             return CGSize(width: 0, height: -diff)
         case .landscape:
             return CGSize(width: diff, height: 0)
+        case .portraitFlipped:
+            return CGSize(width: 0, height: diff)
+        case .landscapeFlipped:
+            return CGSize(width: -diff, height: 0)
         }
     }
 
     private var cropAspectRatio: CGFloat {
         let width = CGFloat(printerModel.imageWidth)
         let height = CGFloat(printerModel.imageHeight)
-        switch orientation {
-        case .portrait:
-            return width / height
-        case .landscape:
+        if orientation.isLandscape {
             return height / width
+        } else {
+            return width / height
         }
     }
 
@@ -81,7 +104,9 @@ struct ImageEditorView: View {
                     frameSize: calculatedFrameSize,
                     orientation: orientation,
                     thinBorder: thinBorder,
-                    thickBorder: thickBorder
+                    thickBorder: thickBorder,
+                    onRotateCW: { orientation = orientation.rotatedCW() },
+                    onRotateCCW: { orientation = orientation.rotatedCCW() }
                 )
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
@@ -96,8 +121,8 @@ struct ImageEditorView: View {
     }
 
     private func calculateFrameSize(in containerSize: CGSize) -> CGSize {
-        let maxWidth = containerSize.width * 0.75
-        let maxHeight = containerSize.height * 0.75
+        let maxWidth = containerSize.width * 0.85
+        let maxHeight = containerSize.height * 0.85
 
         var width = maxWidth
         var height = width / cropAspectRatio
@@ -172,18 +197,19 @@ struct PolaroidFrameOverlay: View {
     let orientation: Orientation
     let thinBorder: CGFloat
     let thickBorder: CGFloat
+    let onRotateCW: () -> Void
+    let onRotateCCW: () -> Void
 
     private var polaroidSize: CGSize {
-        switch orientation {
-        case .portrait:
-            return CGSize(
-                width: frameSize.width + thinBorder * 2,
-                height: frameSize.height + thinBorder + thickBorder
-            )
-        case .landscape:
+        if orientation.isLandscape {
             return CGSize(
                 width: frameSize.width + thinBorder + thickBorder,
                 height: frameSize.height + thinBorder * 2
+            )
+        } else {
+            return CGSize(
+                width: frameSize.width + thinBorder * 2,
+                height: frameSize.height + thinBorder + thickBorder
             )
         }
     }
@@ -192,62 +218,114 @@ struct PolaroidFrameOverlay: View {
     private var cutoutOffset: CGSize {
         switch orientation {
         case .portrait:
-            // Image at top, thick border at bottom
             return CGSize(width: 0, height: -(thickBorder - thinBorder) / 2)
         case .landscape:
-            // Image at right, thick border at left
             return CGSize(width: (thickBorder - thinBorder) / 2, height: 0)
+        case .portraitFlipped:
+            return CGSize(width: 0, height: (thickBorder - thinBorder) / 2)
+        case .landscapeFlipped:
+            return CGSize(width: -(thickBorder - thinBorder) / 2, height: 0)
         }
     }
 
     var body: some View {
-        ZStack {
-            // Dark overlay with polaroid-shaped cutout
-            Canvas { context, size in
-                // Fill entire area
-                context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(.black.opacity(0.5)))
+        GeometryReader { geometry in
+            let size = geometry.size
+            let centerX = size.width / 2
+            let centerY = size.height / 2
 
-                // Cut out the polaroid shape
-                let polaroidRect = CGRect(
-                    x: (size.width - polaroidSize.width) / 2,
-                    y: (size.height - polaroidSize.height) / 2,
-                    width: polaroidSize.width,
-                    height: polaroidSize.height
-                )
-                context.blendMode = .destinationOut
-                context.fill(Path(roundedRect: polaroidRect, cornerRadius: 4), with: .color(.white))
+            ZStack {
+                // Dark overlay with polaroid-shaped cutout
+                Canvas { context, size in
+                    context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(.black.opacity(0.5)))
+
+                    let polaroidRect = CGRect(
+                        x: (size.width - polaroidSize.width) / 2,
+                        y: (size.height - polaroidSize.height) / 2,
+                        width: polaroidSize.width,
+                        height: polaroidSize.height
+                    )
+                    context.blendMode = .destinationOut
+                    context.fill(Path(roundedRect: polaroidRect, cornerRadius: 4), with: .color(.white))
+                }
+
+                // White polaroid frame with image cutout
+                Canvas { context, size in
+                    let centerX = size.width / 2
+                    let centerY = size.height / 2
+
+                    let polaroidRect = CGRect(
+                        x: centerX - polaroidSize.width / 2,
+                        y: centerY - polaroidSize.height / 2,
+                        width: polaroidSize.width,
+                        height: polaroidSize.height
+                    )
+
+                    let imageRect = CGRect(
+                        x: centerX - frameSize.width / 2 + cutoutOffset.width,
+                        y: centerY - frameSize.height / 2 + cutoutOffset.height,
+                        width: frameSize.width,
+                        height: frameSize.height
+                    )
+
+                    context.fill(Path(roundedRect: polaroidRect, cornerRadius: 4), with: .color(.white))
+                    context.blendMode = .destinationOut
+                    context.fill(Path(imageRect), with: .color(.white))
+                }
+                .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
+                .allowsHitTesting(false)
+
+                // Rotation buttons in thick border
+                rotationButtons(centerX: centerX, centerY: centerY)
             }
-
-            // White polaroid frame with image cutout
-            Canvas { context, size in
-                let centerX = size.width / 2
-                let centerY = size.height / 2
-
-                // Outer polaroid rectangle
-                let polaroidRect = CGRect(
-                    x: centerX - polaroidSize.width / 2,
-                    y: centerY - polaroidSize.height / 2,
-                    width: polaroidSize.width,
-                    height: polaroidSize.height
-                )
-
-                // Inner image cutout
-                let imageRect = CGRect(
-                    x: centerX - frameSize.width / 2 + cutoutOffset.width,
-                    y: centerY - frameSize.height / 2 + cutoutOffset.height,
-                    width: frameSize.width,
-                    height: frameSize.height
-                )
-
-                // Draw white frame
-                context.fill(Path(roundedRect: polaroidRect, cornerRadius: 4), with: .color(.white))
-
-                // Cut out the image area
-                context.blendMode = .destinationOut
-                context.fill(Path(imageRect), with: .color(.white))
-            }
-            .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
         }
-        .allowsHitTesting(false)
+    }
+
+    @ViewBuilder
+    private func rotationButtons(centerX: CGFloat, centerY: CGFloat) -> some View {
+        switch orientation {
+        case .portrait:
+            // Fat edge at bottom
+            HStack(spacing: 20) {
+                rotateButton(systemImage: "rotate.right", action: onRotateCW).rotationEffect(Angle(degrees: -90))
+                rotateButton(systemImage: "rotate.left", action: onRotateCCW).rotationEffect(Angle(degrees: 90))
+            }
+            .position(x: centerX, y: centerY + frameSize.height / 2 + thinBorder / 2)
+
+        case .landscape:
+            // Fat edge at left
+            VStack(spacing: 20) {
+                rotateButton(systemImage: "rotate.right", action: onRotateCW)
+                rotateButton(systemImage: "rotate.left", action: onRotateCCW).rotationEffect(Angle(degrees: 180))
+            }
+            .position(x: centerX - frameSize.width / 2 - thinBorder / 2, y: centerY)
+
+        case .portraitFlipped:
+            // Fat edge at top
+            HStack(spacing: 20) {
+              rotateButton(systemImage: "rotate.left", action: onRotateCCW).rotationEffect(Angle(degrees: -90))
+              rotateButton(systemImage: "rotate.right", action: onRotateCW).rotationEffect(Angle(degrees: 90))
+            }
+            .position(x: centerX, y: centerY - frameSize.height / 2 - thinBorder / 2)
+
+        case .landscapeFlipped:
+            // Fat edge at right
+            VStack(spacing: 20) {
+              rotateButton(systemImage: "rotate.left", action: onRotateCCW)
+              rotateButton(systemImage: "rotate.right", action: onRotateCW).rotationEffect(Angle(degrees: 180))
+            }
+            .position(x: centerX + frameSize.width / 2 + thinBorder / 2, y: centerY)
+        }
+    }
+
+    private func rotateButton(systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: 24, weight: .medium))
+                .foregroundStyle(.black.opacity(0.5))
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }

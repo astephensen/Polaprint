@@ -136,17 +136,6 @@ struct ContentView: View {
 
             Spacer()
 
-            // Orientation picker
-            Picker("", selection: $orientation) {
-                ForEach(Orientation.allCases, id: \.self) { orientation in
-                    Text(orientation.displayName).tag(orientation)
-                }
-            }
-            .pickerStyle(.segmented)
-            .fixedSize()
-
-            Spacer()
-
             // Print button
             Button {
                 Task {
@@ -214,25 +203,23 @@ struct ContentView: View {
     }
 
     private func processImageForPrint(_ image: CGImage) -> CGImage {
-        // Apply the scale and offset transformations to create the final image
         let model = printerManager.printerModel
 
-        // For landscape, we crop to swapped dimensions then rotate
+        // For landscape orientations, crop to swapped dimensions
         let cropWidth: Int
         let cropHeight: Int
-        switch orientation {
-        case .portrait:
-            cropWidth = model.imageWidth
-            cropHeight = model.imageHeight
-        case .landscape:
+        if orientation.isLandscape {
             cropWidth = model.imageHeight
             cropHeight = model.imageWidth
+        } else {
+            cropWidth = model.imageWidth
+            cropHeight = model.imageHeight
         }
 
         let targetAspect = CGFloat(cropWidth) / CGFloat(cropHeight)
         let imageAspect = CGFloat(image.width) / CGFloat(image.height)
 
-        // Calculate the scaled image size to fill the target (same logic as preview)
+        // Calculate the scaled image size to fill the target
         var baseWidth: CGFloat
         var baseHeight: CGFloat
 
@@ -277,8 +264,7 @@ struct ContentView: View {
         context.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 1))
         context.fill(CGRect(x: 0, y: 0, width: cropWidth, height: cropHeight))
 
-        // Draw the image with transformations
-        // Note: Core Graphics has origin at bottom-left, so we flip Y offset
+        // Draw the image
         let drawRect = CGRect(
             x: offsetX,
             y: CGFloat(cropHeight) - offsetY - scaledHeight,
@@ -291,18 +277,33 @@ struct ContentView: View {
             return image
         }
 
-        // For landscape, rotate 90° CW to get final printer dimensions
-        if orientation == .landscape {
-            return rotate90CW(croppedImage) ?? croppedImage
+        // Apply rotation based on orientation
+        switch orientation {
+        case .portrait:
+            return croppedImage
+        case .landscape:
+            return rotateImage(croppedImage, degrees: 90) ?? croppedImage
+        case .portraitFlipped:
+            return rotateImage(croppedImage, degrees: 180) ?? croppedImage
+        case .landscapeFlipped:
+            return rotateImage(croppedImage, degrees: 270) ?? croppedImage
         }
-
-        return croppedImage
     }
 
-    /// Rotate image 90° clockwise
-    private func rotate90CW(_ image: CGImage) -> CGImage? {
-        let width = image.height  // Swapped for rotation
-        let height = image.width
+    /// Rotate image by specified degrees clockwise
+    private func rotateImage(_ image: CGImage, degrees: Int) -> CGImage? {
+        let radians = CGFloat(degrees) * .pi / 180
+
+        // For 90 and 270, swap dimensions
+        let width: Int
+        let height: Int
+        if degrees == 90 || degrees == 270 {
+            width = image.height
+            height = image.width
+        } else {
+            width = image.width
+            height = image.height
+        }
 
         guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
               let context = CGContext(
@@ -317,10 +318,22 @@ struct ContentView: View {
             return nil
         }
 
-        context.translateBy(x: CGFloat(width), y: 0)
-        context.rotate(by: .pi / 2)
-        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        // Apply appropriate transform for each rotation
+        switch degrees {
+        case 90:
+            context.translateBy(x: CGFloat(width), y: 0)
+            context.rotate(by: radians)
+        case 180:
+            context.translateBy(x: CGFloat(width), y: CGFloat(height))
+            context.rotate(by: radians)
+        case 270:
+            context.translateBy(x: 0, y: CGFloat(height))
+            context.rotate(by: radians)
+        default:
+            break
+        }
 
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
         return context.makeImage()
     }
 }

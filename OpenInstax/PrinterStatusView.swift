@@ -19,8 +19,7 @@ struct PrinterStatusView: View {
         .frame(minWidth: 280)
         #else
         .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(.regularMaterial, in: Capsule())
+        .frame(height: 44)
         #endif
     }
 
@@ -137,3 +136,73 @@ struct PrintProgressOverlay: View {
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 }
+
+#if os(iOS)
+struct GlassEffectModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.glassEffect(.regular.interactive(), in: .capsule)
+        } else {
+            content
+        }
+    }
+}
+
+struct PrinterDetailsPopover: View {
+    let connectionState: PrinterConnectionState
+
+    var body: some View {
+        Group {
+            if case .connected(let info) = connectionState {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(info.modelName)
+                        .font(.headline)
+
+                    HStack(spacing: 12) {
+                        Image(systemName: "photo.stack")
+                            .foregroundStyle(.secondary)
+                        Text("\(info.printsRemaining) prints remaining")
+                    }
+
+                    HStack(spacing: 12) {
+                        batteryIcon(percentage: info.batteryPercentage)
+                        Text("\(info.batteryPercentage)% battery")
+                    }
+                }
+                .padding()
+            } else {
+                Text("Not connected")
+                    .foregroundStyle(.secondary)
+                    .padding()
+            }
+        }
+        .presentationCompactAdaptation(.popover)
+    }
+
+    private func batteryIcon(percentage: Int) -> some View {
+        let iconName: String
+        let color: Color
+
+        switch percentage {
+        case 0..<20:
+            iconName = "battery.0percent"
+            color = .red
+        case 20..<40:
+            iconName = "battery.25percent"
+            color = .orange
+        case 40..<60:
+            iconName = "battery.50percent"
+            color = .yellow
+        case 60..<80:
+            iconName = "battery.75percent"
+            color = .green
+        default:
+            iconName = "battery.100percent"
+            color = .green
+        }
+
+        return Image(systemName: iconName)
+            .foregroundStyle(color)
+    }
+}
+#endif

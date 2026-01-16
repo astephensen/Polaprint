@@ -19,6 +19,7 @@ struct ContentView: View {
     @State private var showError: Bool = false
     @State private var errorMessage: String = ""
     @State private var showSettings: Bool = false
+    @State private var showPrinterDetails: Bool = false
 
     var body: some View {
         // Main content area
@@ -82,10 +83,26 @@ struct ContentView: View {
             #endif
 
             ToolbarItem(placement: .principal) {
+                #if os(iOS)
+                Button {
+                    showPrinterDetails = true
+                } label: {
+                    PrinterStatusView(
+                        connectionState: printerManager.connectionState,
+                        printProgress: printerManager.printProgress
+                    )
+                }
+                .buttonStyle(.plain)
+                .modifier(GlassEffectModifier())
+                .popover(isPresented: $showPrinterDetails) {
+                    PrinterDetailsPopover(connectionState: printerManager.connectionState)
+                }
+                #else
                 PrinterStatusView(
                     connectionState: printerManager.connectionState,
                     printProgress: printerManager.printProgress
                 )
+                #endif
             }
 
             #if os(macOS)
@@ -110,23 +127,16 @@ struct ContentView: View {
             }
             #else
             ToolbarItem(placement: .topBarTrailing) {
-                if canPrint {
-                    Button {
-                        Task {
-                            await printPhoto()
-                        }
-                    } label: {
-                        Image(systemName: "printer.fill")
+                Button {
+                    Task {
+                        await printPhoto()
                     }
-                    .buttonStyle(.borderedProminent)
-                } else {
-                    Button {
-                    } label: {
-                        Image(systemName: "printer.fill")
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(true)
+                } label: {
+                    Image(systemName: "printer.fill")
+                        .foregroundStyle(.white)
                 }
+                .buttonStyle(.borderedProminent)
+                .disabled(!canPrint)
             }
             #endif
         }

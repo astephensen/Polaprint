@@ -123,8 +123,13 @@ struct ImageEditorView: View {
     }
 
     private func calculateFrameSize(in containerSize: CGSize) -> CGSize {
-        let maxWidth = containerSize.width * 0.85
-        let maxHeight = containerSize.height * 0.85
+        #if os(macOS)
+        let scaleFactor: CGFloat = 0.80
+        #else
+        let scaleFactor: CGFloat = 0.85
+        #endif
+        let maxWidth = containerSize.width * scaleFactor
+        let maxHeight = containerSize.height * scaleFactor
 
         var width = maxWidth
         var height = width / cropAspectRatio

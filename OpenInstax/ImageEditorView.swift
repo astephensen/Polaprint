@@ -1,11 +1,25 @@
 import SwiftUI
 import InstaxKit
 
+/// Print orientation
+enum Orientation: String, CaseIterable {
+    case portrait
+    case landscape
+
+    var displayName: String {
+        switch self {
+        case .portrait: "Portrait"
+        case .landscape: "Landscape"
+        }
+    }
+}
+
 struct ImageEditorView: View {
     let image: CGImage
     let printerModel: PrinterModel
     @Binding var scale: CGFloat
     @Binding var offset: CGSize
+    @Binding var orientation: Orientation
     @Binding var frameSize: CGSize
 
     @State private var lastScale: CGFloat = 1.0
@@ -20,13 +34,23 @@ struct ImageEditorView: View {
         let thin = frameSize.height * thinBorderRatio
         let thick = frameSize.height * thickBorderRatio
         let diff = (thick - thin) / 2
-        return CGSize(width: 0, height: -diff)
+        switch orientation {
+        case .portrait:
+            return CGSize(width: 0, height: -diff)
+        case .landscape:
+            return CGSize(width: diff, height: 0)
+        }
     }
 
     private var cropAspectRatio: CGFloat {
         let width = CGFloat(printerModel.imageWidth)
         let height = CGFloat(printerModel.imageHeight)
-        return width / height
+        switch orientation {
+        case .portrait:
+            return width / height
+        case .landscape:
+            return height / width
+        }
     }
 
     private var imageAspectRatio: CGFloat {
@@ -55,6 +79,7 @@ struct ImageEditorView: View {
                 // Polaroid frame overlay (visual only)
                 PolaroidFrameOverlay(
                     frameSize: calculatedFrameSize,
+                    orientation: orientation,
                     thinBorder: thinBorder,
                     thickBorder: thickBorder
                 )
@@ -66,6 +91,7 @@ struct ImageEditorView: View {
             .clipped()
             .onAppear { frameSize = calculatedFrameSize }
             .onChange(of: geometry.size) { _, _ in frameSize = calculatedFrameSize }
+            .onChange(of: orientation) { _, _ in frameSize = calculatedFrameSize }
         }
     }
 
@@ -143,20 +169,35 @@ struct ImageEditorView: View {
 
 struct PolaroidFrameOverlay: View {
     let frameSize: CGSize
+    let orientation: Orientation
     let thinBorder: CGFloat
     let thickBorder: CGFloat
 
     private var polaroidSize: CGSize {
-        CGSize(
-            width: frameSize.width + thinBorder * 2,
-            height: frameSize.height + thinBorder + thickBorder
-        )
+        switch orientation {
+        case .portrait:
+            return CGSize(
+                width: frameSize.width + thinBorder * 2,
+                height: frameSize.height + thinBorder + thickBorder
+            )
+        case .landscape:
+            return CGSize(
+                width: frameSize.width + thinBorder + thickBorder,
+                height: frameSize.height + thinBorder * 2
+            )
+        }
     }
 
     /// Offset of the image cutout within the polaroid frame
     private var cutoutOffset: CGSize {
-        // Image at top, thick border at bottom
-        CGSize(width: 0, height: -(thickBorder - thinBorder) / 2)
+        switch orientation {
+        case .portrait:
+            // Image at top, thick border at bottom
+            return CGSize(width: 0, height: -(thickBorder - thinBorder) / 2)
+        case .landscape:
+            // Image at right, thick border at left
+            return CGSize(width: (thickBorder - thinBorder) / 2, height: 0)
+        }
     }
 
     var body: some View {

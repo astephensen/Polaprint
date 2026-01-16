@@ -14,6 +14,7 @@ struct ContentView: View {
     @State private var isLoadingImage: Bool = false
     @State private var scale: CGFloat = 1.0
     @State private var offset: CGSize = .zero
+    @State private var orientation: Orientation = .portrait
     @State private var previewFrameSize: CGSize = .zero
     @State private var showError: Bool = false
     @State private var errorMessage: String = ""
@@ -48,6 +49,7 @@ struct ContentView: View {
                     printerModel: printerManager.printerModel,
                     scale: $scale,
                     offset: $offset,
+                    orientation: $orientation,
                     frameSize: $previewFrameSize
                 )
                 .overlay {
@@ -134,6 +136,17 @@ struct ContentView: View {
 
             Spacer()
 
+            // Orientation picker
+            Picker("", selection: $orientation) {
+                ForEach(Orientation.allCases, id: \.self) { orientation in
+                    Text(orientation.displayName).tag(orientation)
+                }
+            }
+            .pickerStyle(.segmented)
+            .fixedSize()
+
+            Spacer()
+
             // Print button
             Button {
                 Task {
@@ -204,10 +217,19 @@ struct ContentView: View {
         // Apply the scale and offset transformations to create the final image
         let model = printerManager.printerModel
 
-        let targetWidth = model.imageWidth
-        let targetHeight = model.imageHeight
+        // For landscape, we crop to swapped dimensions then rotate
+        let cropWidth: Int
+        let cropHeight: Int
+        switch orientation {
+        case .portrait:
+            cropWidth = model.imageWidth
+            cropHeight = model.imageHeight
+        case .landscape:
+            cropWidth = model.imageHeight
+            cropHeight = model.imageWidth
+        }
 
-        let targetAspect = CGFloat(targetWidth) / CGFloat(targetHeight)
+        let targetAspect = CGFloat(cropWidth) / CGFloat(cropHeight)
         let imageAspect = CGFloat(image.width) / CGFloat(image.height)
 
         // Calculate the scaled image size to fill the target (same logic as preview)
@@ -215,10 +237,10 @@ struct ContentView: View {
         var baseHeight: CGFloat
 
         if imageAspect > targetAspect {
-            baseHeight = CGFloat(targetHeight)
+            baseHeight = CGFloat(cropHeight)
             baseWidth = baseHeight * imageAspect
         } else {
-            baseWidth = CGFloat(targetWidth)
+            baseWidth = CGFloat(cropWidth)
             baseHeight = baseWidth / imageAspect
         }
 
@@ -227,26 +249,24 @@ struct ContentView: View {
         let scaledHeight = baseHeight * scale
 
         // Convert offset from preview coordinates to print coordinates
-        // The offset is in screen points relative to the preview frame
-        // We need to scale it proportionally to the print size
-        let scaleFactorX = CGFloat(targetWidth) / max(previewFrameSize.width, 1)
-        let scaleFactorY = CGFloat(targetHeight) / max(previewFrameSize.height, 1)
+        let scaleFactorX = CGFloat(cropWidth) / max(previewFrameSize.width, 1)
+        let scaleFactorY = CGFloat(cropHeight) / max(previewFrameSize.height, 1)
 
         let printOffsetX = offset.width * scaleFactorX
         let printOffsetY = offset.height * scaleFactorY
 
         // Calculate final position (centered + user offset)
-        let offsetX = (CGFloat(targetWidth) - scaledWidth) / 2 + printOffsetX
-        let offsetY = (CGFloat(targetHeight) - scaledHeight) / 2 + printOffsetY
+        let offsetX = (CGFloat(cropWidth) - scaledWidth) / 2 + printOffsetX
+        let offsetY = (CGFloat(cropHeight) - scaledHeight) / 2 + printOffsetY
 
-        // Create the output context
+        // Create the output context for cropping
         guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
               let context = CGContext(
                 data: nil,
-                width: targetWidth,
-                height: targetHeight,
+                width: cropWidth,
+                height: cropHeight,
                 bitsPerComponent: 8,
-                bytesPerRow: targetWidth * 4,
+                bytesPerRow: cropWidth * 4,
                 space: colorSpace,
                 bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
               ) else {
@@ -255,13 +275,13 @@ struct ContentView: View {
 
         // Fill with white background
         context.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 1))
-        context.fill(CGRect(x: 0, y: 0, width: targetWidth, height: targetHeight))
+        context.fill(CGRect(x: 0, y: 0, width: cropWidth, height: cropHeight))
 
         // Draw the image with transformations
         // Note: Core Graphics has origin at bottom-left, so we flip Y offset
         let drawRect = CGRect(
             x: offsetX,
-            y: CGFloat(targetHeight) - offsetY - scaledHeight,
+            y: CGFloat(cropHeight) - offsetY - scaledHeight,
             width: scaledWidth,
             height: scaledHeight
         )
@@ -271,7 +291,37 @@ struct ContentView: View {
             return image
         }
 
+        // For landscape, rotate 90° CW to get final printer dimensions
+        if orientation == .landscape {
+            return rotate90CW(croppedImage) ?? croppedImage
+        }
+
         return croppedImage
+    }
+
+    /// Rotate image 90° clockwise
+    private func rotate90CW(_ image: CGImage) -> CGImage? {
+        let width = image.height  // Swapped for rotation
+        let height = image.width
+
+        guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
+              let context = CGContext(
+                data: nil,
+                width: width,
+                height: height,
+                bitsPerComponent: 8,
+                bytesPerRow: width * 4,
+                space: colorSpace,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+              ) else {
+            return nil
+        }
+
+        context.translateBy(x: CGFloat(width), y: 0)
+        context.rotate(by: .pi / 2)
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+
+        return context.makeImage()
     }
 }
 

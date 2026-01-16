@@ -22,6 +22,17 @@ struct ContentView: View {
 
     var body: some View {
         // Main content area
+        #if os(iOS)
+        NavigationStack {
+            content
+        }
+        #else
+        content
+        #endif
+    }
+
+    @ViewBuilder
+    private var content: some View {
         Group {
             if let image = selectedImage {
                 // Image editor
@@ -35,15 +46,6 @@ struct ContentView: View {
                     onClearImage: clearImage
                 )
                 .overlay {
-                    // Dark overlay with polaroid cutout (fixed, doesn't move with zoom)
-                    DarkOverlayWithCutout(
-                        frameSize: previewFrameSize,
-                        orientation: orientation
-                    )
-                    .ignoresSafeArea()
-                    .allowsHitTesting(false)
-                }
-                .overlay {
                     if printerManager.isPrinting, let progress = printerManager.printProgress {
                         PrintProgressOverlay(progress: progress)
                     }
@@ -56,9 +58,12 @@ struct ContentView: View {
                 emptyStateView
             }
         }
+        #if os(macOS)
         .safeAreaPadding(.top, 52)
+        #endif
         .background(Color.black.opacity(0.8).ignoresSafeArea())
         .toolbar {
+            #if os(macOS)
             ToolbarItem(placement: .navigation) {
                 Button {
                     showSettings = true
@@ -66,6 +71,15 @@ struct ContentView: View {
                     Image(systemName: "gear")
                 }
             }
+            #else
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    showSettings = true
+                } label: {
+                    Image(systemName: "gear")
+                }
+            }
+            #endif
 
             ToolbarItem(placement: .principal) {
                 PrinterStatusView(
@@ -74,6 +88,7 @@ struct ContentView: View {
                 )
             }
 
+            #if os(macOS)
             ToolbarItem(placement: .primaryAction) {
                 if canPrint {
                     Button {
@@ -93,6 +108,27 @@ struct ContentView: View {
                     .disabled(true)
                 }
             }
+            #else
+            ToolbarItem(placement: .topBarTrailing) {
+                if canPrint {
+                    Button {
+                        Task {
+                            await printPhoto()
+                        }
+                    } label: {
+                        Image(systemName: "printer.fill")
+                    }
+                    .buttonStyle(.borderedProminent)
+                } else {
+                    Button {
+                    } label: {
+                        Image(systemName: "printer.fill")
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(true)
+                }
+            }
+            #endif
         }
         #if os(macOS)
         .ignoresSafeArea()
@@ -345,58 +381,6 @@ struct ContentView: View {
 
         context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
         return context.makeImage()
-    }
-}
-
-struct DarkOverlayWithCutout: View {
-    let frameSize: CGSize
-    let orientation: Orientation
-
-    // Polaroid border proportions (must match ImageEditorView)
-    private let thinBorderRatio: CGFloat = 0.02
-    private let thickBorderRatio: CGFloat = 0.15
-
-    private var polaroidSize: CGSize {
-        let thinBorder = frameSize.height * thinBorderRatio
-        let thickBorder = frameSize.height * thickBorderRatio
-
-        if orientation.isLandscape {
-            return CGSize(
-                width: frameSize.width + thinBorder + thickBorder,
-                height: frameSize.height + thinBorder * 2
-            )
-        } else {
-            return CGSize(
-                width: frameSize.width + thinBorder * 2,
-                height: frameSize.height + thinBorder + thickBorder
-            )
-        }
-    }
-
-    var body: some View {
-        GeometryReader { geometry in
-            Canvas { context, size in
-                // Fill entire canvas with dark color
-                context.fill(
-                    Path(CGRect(origin: .zero, size: size)),
-                    with: .color(.black.opacity(0.5))
-                )
-
-                // Cut out polaroid shape in center (offset to account for toolbar padding)
-                let toolbarOffset: CGFloat = 26 // Half of the 52pt top safe area padding
-                let polaroidRect = CGRect(
-                    x: (size.width - polaroidSize.width) / 2,
-                    y: (size.height - polaroidSize.height) / 2 + toolbarOffset,
-                    width: polaroidSize.width,
-                    height: polaroidSize.height
-                )
-                context.blendMode = .destinationOut
-                context.fill(
-                    Path(roundedRect: polaroidRect, cornerRadius: 4),
-                    with: .color(.white)
-                )
-            }
-        }
     }
 }
 

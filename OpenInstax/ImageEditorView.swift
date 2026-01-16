@@ -88,16 +88,21 @@ struct ImageEditorView: View {
             let visualOffset = visualAlignmentOffset(for: calculatedFrameSize)
             let thinBorder = calculatedFrameSize.height * thinBorderRatio
             let thickBorder = calculatedFrameSize.height * thickBorderRatio
+            let polaroidSize = orientation.isLandscape
+                ? CGSize(width: calculatedFrameSize.width + thinBorder + thickBorder,
+                         height: calculatedFrameSize.height + thinBorder * 2)
+                : CGSize(width: calculatedFrameSize.width + thinBorder * 2,
+                         height: calculatedFrameSize.height + thinBorder + thickBorder)
 
             ZStack {
-                // Image - offset includes user pan + visual alignment for polaroid
+                // Image layer (can extend beyond bounds when zoomed)
                 Image(decorative: image, scale: 1.0)
                     .resizable()
                     .frame(width: imageSize.width * scale, height: imageSize.height * scale)
                     .offset(x: offset.width + visualOffset.width,
                             y: offset.height + visualOffset.height)
 
-                // Polaroid frame overlay (visual only)
+                // Polaroid frame and controls (fixed size)
                 PolaroidFrameOverlay(
                     frameSize: calculatedFrameSize,
                     orientation: orientation,
@@ -109,6 +114,24 @@ struct ImageEditorView: View {
                 )
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
+            .overlay {
+                // Dark overlay with polaroid cutout - extends to screen edges
+                // Use outer geometry's safe area insets to position cutout correctly
+                let safeArea = geometry.safeAreaInsets
+                let cutoutRect = CGRect(
+                    x: safeArea.leading + geometry.size.width / 2 - polaroidSize.width / 2,
+                    y: safeArea.top + geometry.size.height / 2 - polaroidSize.height / 2,
+                    width: polaroidSize.width,
+                    height: polaroidSize.height
+                )
+                Canvas { context, size in
+                    context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(.black.opacity(0.8)))
+                    context.blendMode = .destinationOut
+                    context.fill(Path(roundedRect: cutoutRect, cornerRadius: 4), with: .color(.white))
+                }
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
+            }
             .contentShape(Rectangle())
             .gesture(dragGesture(frameSize: calculatedFrameSize, imageSize: imageSize))
             .gesture(magnificationGesture(frameSize: calculatedFrameSize, imageSize: imageSize))
@@ -239,7 +262,6 @@ struct PolaroidFrameOverlay: View {
             let centerY = size.height / 2
 
             ZStack {
-
                 // White polaroid frame with image cutout
                 Canvas { context, size in
                     let centerX = size.width / 2

@@ -9,11 +9,19 @@ struct PrinterStatusView: View {
         HStack(spacing: 6) {
             statusIcon
             statusText
+            #if os(macOS)
             if case .connected(let info) = connectionState {
                 printerDetails(info)
             }
+            #endif
         }
+        #if os(macOS)
         .frame(minWidth: 280)
+        #else
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(.regularMaterial, in: Capsule())
+        #endif
     }
 
     @ViewBuilder

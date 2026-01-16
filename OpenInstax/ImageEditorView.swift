@@ -90,9 +90,6 @@ struct ImageEditorView: View {
             let thickBorder = calculatedFrameSize.height * thickBorderRatio
 
             ZStack {
-                // Dark background
-                Color.black.opacity(0.8)
-
                 // Image - offset includes user pan + visual alignment for polaroid
                 Image(decorative: image, scale: 1.0)
                     .resizable()
@@ -115,7 +112,6 @@ struct ImageEditorView: View {
             .contentShape(Rectangle())
             .gesture(dragGesture(frameSize: calculatedFrameSize, imageSize: imageSize))
             .gesture(magnificationGesture(frameSize: calculatedFrameSize, imageSize: imageSize))
-            .clipped()
             .onAppear { frameSize = calculatedFrameSize }
             .onChange(of: geometry.size) { _, _ in frameSize = calculatedFrameSize }
             .onChange(of: orientation) { _, _ in frameSize = calculatedFrameSize }
@@ -243,19 +239,6 @@ struct PolaroidFrameOverlay: View {
             let centerY = size.height / 2
 
             ZStack {
-                // Dark overlay with polaroid-shaped cutout
-                Canvas { context, size in
-                    context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(.black.opacity(0.5)))
-
-                    let polaroidRect = CGRect(
-                        x: (size.width - polaroidSize.width) / 2,
-                        y: (size.height - polaroidSize.height) / 2,
-                        width: polaroidSize.width,
-                        height: polaroidSize.height
-                    )
-                    context.blendMode = .destinationOut
-                    context.fill(Path(roundedRect: polaroidRect, cornerRadius: 4), with: .color(.white))
-                }
 
                 // White polaroid frame with image cutout
                 Canvas { context, size in

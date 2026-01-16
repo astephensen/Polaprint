@@ -10,7 +10,8 @@ struct OpenInstaxApp: App {
                 #endif
         }
         #if os(macOS)
-        .windowStyle(.hiddenTitleBar)
+        .windowStyle(.titleBar)
+        .windowToolbarStyle(.unified(showsTitle: false))
         .defaultSize(width: 600, height: 800)
         #endif
     }

@@ -6,95 +6,76 @@ struct PrinterStatusView: View {
     let printProgress: PrintProgress?
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 6) {
             statusIcon
             statusText
-            Spacer()
             if case .connected(let info) = connectionState {
                 printerDetails(info)
             }
         }
-        .padding()
-        .background(statusBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .frame(minWidth: 280)
     }
 
     @ViewBuilder
     private var statusIcon: some View {
         switch connectionState {
-        case .searching:
-            ProgressView()
-                .controlSize(.small)
-        case .connecting:
+        case .searching, .connecting:
             ProgressView()
                 .controlSize(.small)
         case .connected:
             Image(systemName: "checkmark.circle.fill")
                 .foregroundStyle(.green)
-                .font(.title2)
         case .error:
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(.orange)
-                .font(.title2)
         }
     }
 
     @ViewBuilder
     private var statusText: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            switch connectionState {
-            case .searching:
-                Text("Searching...")
-                    .font(.headline)
-                Text("Looking for Instax printer")
-                    .font(.caption)
+        switch connectionState {
+        case .searching:
+            Text("Searching...")
+                .foregroundStyle(.secondary)
+        case .connecting:
+            Text("Connecting...")
+                .foregroundStyle(.secondary)
+        case .connected(let info):
+            if let progress = printProgress {
+                Text("\(info.modelName) — \(progress.message)")
                     .foregroundStyle(.secondary)
-            case .connecting:
-                Text("Connecting...")
-                    .font(.headline)
-                Text("Establishing connection")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            case .connected(let info):
-                Text(info.modelName)
-                    .font(.headline)
-                if let progress = printProgress {
-                    Text(progress.message)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text("Ready to print")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            case .error(let message):
-                Text(message)
-                    .font(.headline)
-                Text("Will retry automatically")
-                    .font(.caption)
+            } else {
+                Text("\(info.modelName) — Ready")
                     .foregroundStyle(.secondary)
             }
+        case .error(let message):
+            Text(message)
+                .foregroundStyle(.orange)
         }
     }
 
     @ViewBuilder
     private func printerDetails(_ info: PrinterInfo) -> some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
+            Divider()
+                .frame(height: 16)
+                .padding(.leading, 4)
+
             // Film remaining
             HStack(spacing: 4) {
                 Image(systemName: "photo.stack")
                     .foregroundStyle(.secondary)
                 Text("\(info.printsRemaining)")
-                    .font(.headline)
                     .monospacedDigit()
+                    .foregroundStyle(.secondary)
             }
 
             // Battery
             HStack(spacing: 4) {
                 batteryIcon(percentage: info.batteryPercentage)
                 Text("\(info.batteryPercentage)%")
-                    .font(.headline)
                     .monospacedDigit()
+                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -123,17 +104,6 @@ struct PrinterStatusView: View {
 
         return Image(systemName: iconName)
             .foregroundStyle(color)
-    }
-
-    private var statusBackground: some ShapeStyle {
-        switch connectionState {
-        case .searching, .connecting:
-            return Color.secondary.opacity(0.1)
-        case .connected:
-            return Color.green.opacity(0.1)
-        case .error:
-            return Color.orange.opacity(0.1)
-        }
     }
 }
 

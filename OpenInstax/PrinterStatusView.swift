@@ -176,31 +176,6 @@ struct PrinterStatusView: View {
         }
     }
 
-    private func batteryIcon(percentage: Int) -> some View {
-        let iconName: String
-        let color: Color
-
-        switch percentage {
-        case 0..<20:
-            iconName = "battery.0percent"
-            color = .red
-        case 20..<40:
-            iconName = "battery.25percent"
-            color = .orange
-        case 40..<60:
-            iconName = "battery.50percent"
-            color = .yellow
-        case 60..<80:
-            iconName = "battery.75percent"
-            color = .green
-        default:
-            iconName = "battery.100percent"
-            color = .green
-        }
-
-        return Image(systemName: iconName)
-            .foregroundStyle(color)
-    }
 }
 
 struct PrintProgressOverlay: View {
@@ -278,30 +253,33 @@ struct PrinterDetailsPopover: View {
         .presentationCompactAdaptation(.popover)
     }
 
-    private func batteryIcon(percentage: Int) -> some View {
-        let iconName: String
-        let color: Color
-
-        switch percentage {
-        case 0..<20:
-            iconName = "battery.0percent"
-            color = .red
-        case 20..<40:
-            iconName = "battery.25percent"
-            color = .orange
-        case 40..<60:
-            iconName = "battery.50percent"
-            color = .yellow
-        case 60..<80:
-            iconName = "battery.75percent"
-            color = .green
-        default:
-            iconName = "battery.100percent"
-            color = .green
-        }
-
-        return Image(systemName: iconName)
-            .foregroundStyle(color)
-    }
 }
 #endif
+
+// MARK: - Shared Helper
+
+private func batteryIcon(percentage: Int) -> some View {
+    let iconName: String
+    let color: Color
+
+    switch percentage {
+    case 0..<20:
+        iconName = "battery.0percent"
+        color = .red
+    case 20..<40:
+        iconName = "battery.25percent"
+        color = .orange
+    case 40..<60:
+        iconName = "battery.50percent"
+        color = .yellow
+    case 60..<80:
+        iconName = "battery.75percent"
+        color = .green
+    default:
+        iconName = "battery.100percent"
+        color = .green
+    }
+
+    return Image(systemName: iconName)
+        .foregroundStyle(color)
+}

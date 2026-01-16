@@ -55,25 +55,15 @@ struct PrinterSettings {
     }
 
     static func loadPrinterModel() -> PrinterModel {
-        guard let savedModel = UserDefaults.standard.string(forKey: printerModelKey) else {
+        guard let savedModel = UserDefaults.standard.string(forKey: printerModelKey),
+              let model = PrinterModel(rawValue: savedModel) else {
             return defaultPrinterModel
         }
-        switch savedModel {
-        case "sp1": return .sp1
-        case "sp2": return .sp2
-        case "sp3": return .sp3
-        default: return defaultPrinterModel
-        }
+        return model
     }
 
     static func savePrinterModel(_ model: PrinterModel) {
-        let modelString: String
-        switch model {
-        case .sp1: modelString = "sp1"
-        case .sp2: modelString = "sp2"
-        case .sp3: modelString = "sp3"
-        }
-        UserDefaults.standard.set(modelString, forKey: printerModelKey)
+        UserDefaults.standard.set(model.rawValue, forKey: printerModelKey)
     }
 }
 

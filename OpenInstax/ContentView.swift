@@ -22,13 +22,8 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Printer status bar at top
+            // Top bar with settings, status, and print button
             HStack {
-                PrinterStatusView(
-                    connectionState: printerManager.connectionState,
-                    printProgress: printerManager.printProgress
-                )
-
                 Button {
                     showSettings = true
                 } label: {
@@ -36,6 +31,26 @@ struct ContentView: View {
                         .font(.title2)
                 }
                 .buttonStyle(.borderless)
+
+                Spacer()
+
+                PrinterStatusView(
+                    connectionState: printerManager.connectionState,
+                    printProgress: printerManager.printProgress
+                )
+
+                Spacer()
+
+                Button {
+                    Task {
+                        await printPhoto()
+                    }
+                } label: {
+                    Image(systemName: "printer.fill")
+                        .font(.title2)
+                }
+                .buttonStyle(.borderless)
+                .disabled(!canPrint)
             }
             .padding()
 
@@ -50,7 +65,8 @@ struct ContentView: View {
                     scale: $scale,
                     offset: $offset,
                     orientation: $orientation,
-                    frameSize: $previewFrameSize
+                    frameSize: $previewFrameSize,
+                    onClearImage: clearImage
                 )
                 .overlay {
                     if printerManager.isPrinting, let progress = printerManager.printProgress {
@@ -64,12 +80,6 @@ struct ContentView: View {
                 // Empty state
                 emptyStateView
             }
-
-            Divider()
-
-            // Bottom toolbar
-            bottomToolbar
-                .padding()
         }
         .onAppear {
             printerManager.startMonitoring()
@@ -125,36 +135,19 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private var bottomToolbar: some View {
-        HStack {
-            // Photo picker
-            ImageSourcePicker(
-                selectedImage: $selectedImage,
-                fullResolutionData: $fullResolutionImageData,
-                isLoading: $isLoadingImage
-            )
-
-            Spacer()
-
-            // Print button
-            Button {
-                Task {
-                    await printPhoto()
-                }
-            } label: {
-                Label("Print", systemImage: "printer.fill")
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(.blue)
-            .disabled(!canPrint)
-        }
-    }
-
     private var canPrint: Bool {
         guard selectedImage != nil else { return false }
         guard !printerManager.isPrinting else { return false }
         guard case .connected = printerManager.connectionState else { return false }
         return true
+    }
+
+    private func clearImage() {
+        selectedImage = nil
+        fullResolutionImageData = nil
+        scale = 1.0
+        offset = .zero
+        orientation = .portrait
     }
 
     private func printPhoto() async {

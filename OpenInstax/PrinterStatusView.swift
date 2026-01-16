@@ -44,11 +44,17 @@ struct PrinterStatusView: View {
         VStack(alignment: .leading, spacing: 2) {
             switch connectionState {
             case .searching:
-                Text("Searching for printer...")
+                Text("Searching...")
                     .font(.headline)
+                Text("Looking for Instax printer")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             case .connecting:
                 Text("Connecting...")
                     .font(.headline)
+                Text("Establishing connection")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             case .connected(let info):
                 Text(info.modelName)
                     .font(.headline)

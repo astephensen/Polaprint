@@ -41,6 +41,7 @@ struct ImageEditorView: View {
     @Binding var offset: CGSize
     @Binding var orientation: Orientation
     @Binding var frameSize: CGSize
+    let onClearImage: () -> Void
 
     @State private var lastScale: CGFloat = 1.0
     @State private var lastOffset: CGSize = .zero
@@ -106,7 +107,8 @@ struct ImageEditorView: View {
                     thinBorder: thinBorder,
                     thickBorder: thickBorder,
                     onRotateCW: { orientation = orientation.rotatedCW() },
-                    onRotateCCW: { orientation = orientation.rotatedCCW() }
+                    onRotateCCW: { orientation = orientation.rotatedCCW() },
+                    onClearImage: onClearImage
                 )
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
@@ -199,6 +201,7 @@ struct PolaroidFrameOverlay: View {
     let thickBorder: CGFloat
     let onRotateCW: () -> Void
     let onRotateCCW: () -> Void
+    let onClearImage: () -> Void
 
     private var polaroidSize: CGSize {
         if orientation.isLandscape {
@@ -288,6 +291,7 @@ struct PolaroidFrameOverlay: View {
             // Fat edge at bottom
             HStack(spacing: 20) {
                 rotateButton(systemImage: "rotate.right", action: onRotateCW).rotationEffect(Angle(degrees: -90))
+                clearButton(action: onClearImage)
                 rotateButton(systemImage: "rotate.left", action: onRotateCCW).rotationEffect(Angle(degrees: 90))
             }
             .position(x: centerX, y: centerY + frameSize.height / 2 + thinBorder / 2)
@@ -296,6 +300,7 @@ struct PolaroidFrameOverlay: View {
             // Fat edge at left
             VStack(spacing: 20) {
                 rotateButton(systemImage: "rotate.right", action: onRotateCW)
+                clearButton(action: onClearImage)
                 rotateButton(systemImage: "rotate.left", action: onRotateCCW).rotationEffect(Angle(degrees: 180))
             }
             .position(x: centerX - frameSize.width / 2 - thinBorder / 2, y: centerY)
@@ -304,6 +309,7 @@ struct PolaroidFrameOverlay: View {
             // Fat edge at top
             HStack(spacing: 20) {
               rotateButton(systemImage: "rotate.left", action: onRotateCCW).rotationEffect(Angle(degrees: -90))
+              clearButton(action: onClearImage)
               rotateButton(systemImage: "rotate.right", action: onRotateCW).rotationEffect(Angle(degrees: 90))
             }
             .position(x: centerX, y: centerY - frameSize.height / 2 - thinBorder / 2)
@@ -312,6 +318,7 @@ struct PolaroidFrameOverlay: View {
             // Fat edge at right
             VStack(spacing: 20) {
               rotateButton(systemImage: "rotate.left", action: onRotateCCW)
+              clearButton(action: onClearImage)
               rotateButton(systemImage: "rotate.right", action: onRotateCW).rotationEffect(Angle(degrees: 180))
             }
             .position(x: centerX + frameSize.width / 2 + thinBorder / 2, y: centerY)
@@ -321,6 +328,17 @@ struct PolaroidFrameOverlay: View {
     private func rotateButton(systemImage: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: systemImage)
+                .font(.system(size: 24, weight: .medium))
+                .foregroundStyle(.black.opacity(0.5))
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func clearButton(action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: "xmark.circle")
                 .font(.system(size: 24, weight: .medium))
                 .foregroundStyle(.black.opacity(0.5))
                 .frame(width: 44, height: 44)

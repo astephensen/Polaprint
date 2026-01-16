@@ -89,18 +89,23 @@ struct ContentView: View {
                 } label: {
                     PrinterStatusView(
                         connectionState: printerManager.connectionState,
-                        printProgress: printerManager.printProgress
+                        printProgress: printerManager.printProgress,
+                        secondsUntilRetry: printerManager.secondsUntilRetry
                     )
                 }
                 .buttonStyle(.plain)
-                .modifier(GlassEffectModifier())
                 .popover(isPresented: $showPrinterDetails) {
-                    PrinterDetailsPopover(connectionState: printerManager.connectionState)
+                    PrinterDetailsPopover(
+                        connectionState: printerManager.connectionState,
+                        onRetry: { printerManager.retryNow() }
+                    )
                 }
                 #else
                 PrinterStatusView(
                     connectionState: printerManager.connectionState,
-                    printProgress: printerManager.printProgress
+                    printProgress: printerManager.printProgress,
+                    secondsUntilRetry: printerManager.secondsUntilRetry,
+                    onRetry: { printerManager.retryNow() }
                 )
                 #endif
             }

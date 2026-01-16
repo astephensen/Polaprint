@@ -5,10 +5,10 @@ struct OpenInstaxApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .preferredColorScheme(.dark)
                 #if os(macOS)
                 .frame(minWidth: 500, minHeight: 600)
                 #endif
+                .preferredColorScheme(.dark)
         }
         #if os(macOS)
         .windowStyle(.titleBar)

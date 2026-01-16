@@ -26,6 +26,7 @@ final class PrinterManager {
     var connectionState: PrinterConnectionState = .searching
     var printProgress: PrintProgress?
     var isPrinting: Bool = false
+    var secondsUntilRetry: Int = 0
     private(set) var detectedPrinterModel: PrinterModel?
     private(set) var selectedPrinterModel: PrinterModel = .sp2
 
@@ -40,11 +41,14 @@ final class PrinterManager {
 
     private var printer: InstaxPrinter?
     private var monitorTask: Task<Void, Never>?
+    private var countdownTask: Task<Void, Never>?
     private var cachedInfo: PrinterInfo?
     private var lastInfoFetch: Date?
+    private var retryCount: Int = 0
 
-    // Short interval when searching, longer when connected
-    private let searchInterval: TimeInterval = 3.0
+    // Retry backoff settings
+    private let initialRetryInterval: TimeInterval = 3.0
+    private let maxRetryInterval: TimeInterval = 15.0
     private let connectedRefreshInterval: TimeInterval = 30.0
 
     init() {
@@ -79,14 +83,54 @@ final class PrinterManager {
     func stopMonitoring() {
         monitorTask?.cancel()
         monitorTask = nil
+        countdownTask?.cancel()
+        countdownTask = nil
+    }
+
+    func retryNow() {
+        countdownTask?.cancel()
+        countdownTask = nil
+        secondsUntilRetry = 0
+        retryCount = 0
+        connectionState = .searching
+        monitorTask?.cancel()
+        monitorTask = Task {
+            await monitorPrinter()
+        }
+    }
+
+    private func currentRetryInterval() -> TimeInterval {
+        let interval = initialRetryInterval * pow(1.5, Double(retryCount))
+        return min(interval, maxRetryInterval)
+    }
+
+    private func startCountdown(seconds: Int) {
+        countdownTask?.cancel()
+        secondsUntilRetry = seconds
+        countdownTask = Task {
+            for remaining in stride(from: seconds, through: 1, by: -1) {
+                if Task.isCancelled { break }
+                secondsUntilRetry = remaining
+                try? await Task.sleep(for: .seconds(1))
+            }
+            secondsUntilRetry = 0
+        }
     }
 
     private func monitorPrinter() async {
         while !Task.isCancelled {
             await checkPrinterStatus()
 
-            // Use shorter interval when searching, longer when connected
-            let interval = (printer != nil) ? connectedRefreshInterval : searchInterval
+            // Use connected refresh interval when connected, backoff when searching
+            let interval: TimeInterval
+            if printer != nil {
+                retryCount = 0
+                interval = connectedRefreshInterval
+            } else {
+                interval = currentRetryInterval()
+                retryCount += 1
+                startCountdown(seconds: Int(interval))
+            }
             try? await Task.sleep(for: .seconds(interval))
         }
     }
@@ -131,16 +175,7 @@ final class PrinterManager {
             cachedInfo = nil
             lastInfoFetch = nil
             let errorMessage = parseError(error)
-            if case .error(let currentError) = connectionState, currentError == errorMessage {
-                // Don't update if same error
-            } else {
-                connectionState = .error(errorMessage)
-            }
-            // After error, wait then go back to searching
-            try? await Task.sleep(for: .seconds(1))
-            if !Task.isCancelled && !isPrinting {
-                connectionState = .searching
-            }
+            connectionState = .error(errorMessage)
         }
     }
 

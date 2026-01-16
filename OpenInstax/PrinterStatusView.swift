@@ -4,14 +4,19 @@ import InstaxKit
 struct PrinterStatusView: View {
     let connectionState: PrinterConnectionState
     let printProgress: PrintProgress?
+    var secondsUntilRetry: Int = 0
+    var onRetry: (() -> Void)? = nil
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
             statusIcon
             statusText
             #if os(macOS)
             if case .connected(let info) = connectionState {
                 printerDetails(info)
+            }
+            if case .error = connectionState, let onRetry = onRetry {
+                retrySection(onRetry: onRetry)
             }
             #endif
         }
@@ -21,6 +26,27 @@ struct PrinterStatusView: View {
         .padding(.horizontal, 16)
         .frame(height: 44)
         #endif
+    }
+
+    @ViewBuilder
+    private func retrySection(onRetry: @escaping () -> Void) -> some View {
+        HStack(spacing: 8) {
+            Divider()
+                .frame(height: 16)
+                .padding(.leading, 4)
+
+            if secondsUntilRetry > 0 {
+                Text("\(secondsUntilRetry)s")
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+            }
+
+            Button("Retry") {
+                onRetry()
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+        }
     }
 
     @ViewBuilder
@@ -40,6 +66,12 @@ struct PrinterStatusView: View {
 
     @ViewBuilder
     private var statusText: some View {
+        #if os(iOS)
+        VStack(alignment: .leading, spacing: 0) {
+            statusTitle
+            statusSubtitle
+        }
+        #else
         switch connectionState {
         case .searching:
             Text("Searching...")
@@ -56,10 +88,67 @@ struct PrinterStatusView: View {
                     .foregroundStyle(.secondary)
             }
         case .error(let message):
+            if secondsUntilRetry > 0 {
+                Text("\(message) — \(secondsUntilRetry)s")
+                    .monospacedDigit()
+                    .foregroundStyle(.orange)
+            } else {
+                Text(message)
+                    .foregroundStyle(.orange)
+            }
+        }
+        #endif
+    }
+
+    #if os(iOS)
+    @ViewBuilder
+    private var statusTitle: some View {
+        switch connectionState {
+        case .searching:
+            Text("Searching")
+                .fontWeight(.medium)
+        case .connecting:
+            Text("Connecting")
+                .fontWeight(.medium)
+        case .connected(let info):
+            Text(info.modelName)
+                .fontWeight(.medium)
+        case .error(let message):
             Text(message)
+                .fontWeight(.medium)
                 .foregroundStyle(.orange)
         }
     }
+
+    @ViewBuilder
+    private var statusSubtitle: some View {
+        switch connectionState {
+        case .searching:
+            Text("Looking for printer...")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        case .connecting:
+            Text("Please wait...")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        case .connected:
+            if let progress = printProgress {
+                Text(progress.message)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("Ready")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        case .error:
+            Text("Retrying in \(secondsUntilRetry)s...")
+                .font(.caption)
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+        }
+    }
+    #endif
 
     @ViewBuilder
     private func printerDetails(_ info: PrinterInfo) -> some View {
@@ -150,6 +239,7 @@ struct GlassEffectModifier: ViewModifier {
 
 struct PrinterDetailsPopover: View {
     let connectionState: PrinterConnectionState
+    var onRetry: (() -> Void)? = nil
 
     var body: some View {
         Group {
@@ -171,9 +261,18 @@ struct PrinterDetailsPopover: View {
                 }
                 .padding()
             } else {
-                Text("Not connected")
-                    .foregroundStyle(.secondary)
-                    .padding()
+                VStack(spacing: 16) {
+                    Text("Not connected")
+                        .foregroundStyle(.secondary)
+
+                    if let onRetry = onRetry {
+                        Button("Retry Connection") {
+                            onRetry()
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                }
+                .padding()
             }
         }
         .presentationCompactAdaptation(.popover)

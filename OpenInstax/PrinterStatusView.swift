@@ -14,18 +14,15 @@ struct PrinterStatusView: View {
             #if os(macOS)
             if case .connected(let info) = connectionState {
                 printerDetails(info)
+                .fixedSize()
             }
             if case .error = connectionState, let onRetry = onRetry {
                 retrySection(onRetry: onRetry)
             }
             #endif
         }
-        #if os(macOS)
-        .frame(minWidth: 280)
-        #else
         .padding(.horizontal, 16)
-        .frame(height: 44)
-        #endif
+        .frame(maxWidth: .infinity)
     }
 
     @ViewBuilder

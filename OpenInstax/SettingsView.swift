@@ -97,7 +97,7 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section {
-                    Picker("Connection", selection: $connectionType) {
+                    Picker("Host", selection: $connectionType) {
                         ForEach(ConnectionType.allCases) { type in
                             VStack(alignment: .leading) {
                                 Text(type.displayName)
@@ -108,7 +108,6 @@ struct SettingsView: View {
                             .tag(type)
                         }
                     }
-                    .pickerStyle(.inline)
 
                     if connectionType == .custom {
                         TextField("IP Address", text: $customHost)
@@ -137,7 +136,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Authentication")
                 } footer: {
-                    Text("The PIN code displayed on your printer.")
+                    Text("The PIN code to connect to your printer.")
                 }
 
                 Section {

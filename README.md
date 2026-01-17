@@ -16,7 +16,7 @@ A native iOS and macOS app for printing photos to Fujifilm Instax printers over 
 
 - iOS 16+ / macOS 13+
 - Xcode 15+
-- [InstaxKit](../InstaxKit) (included as local package)
+- [InstaxKit](https://github.com/astephensen/InstaxKit) checked out next to this repo (currently included as local package)
 
 ## Building
 

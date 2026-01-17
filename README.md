@@ -2,6 +2,8 @@
 
 A native iOS and macOS app for printing photos to Fujifilm Instax printers over WiFi.
 
+<img width="832" height="764" alt="image" src="https://github.com/user-attachments/assets/5945c9b7-48f6-48df-ae2a-bd7a7f93aed9" />
+
 ## Features
 
 - Direct WiFi printing to Instax SP-1, SP-2, and SP-3 printers

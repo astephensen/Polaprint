@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "A60000010000000000000001"
-               BuildableName = "OpenInstax.app"
-               BlueprintName = "OpenInstax"
-               ReferencedContainer = "container:OpenInstax.xcodeproj">
+               BuildableName = "Polaprint.app"
+               BlueprintName = "Polaprint"
+               ReferencedContainer = "container:Polaprint.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A60000010000000000000001"
-            BuildableName = "OpenInstax.app"
-            BlueprintName = "OpenInstax"
-            ReferencedContainer = "container:OpenInstax.xcodeproj">
+            BuildableName = "Polaprint.app"
+            BlueprintName = "Polaprint"
+            ReferencedContainer = "container:Polaprint.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A60000010000000000000001"
-            BuildableName = "OpenInstax.app"
-            BlueprintName = "OpenInstax"
-            ReferencedContainer = "container:OpenInstax.xcodeproj">
+            BuildableName = "Polaprint.app"
+            BlueprintName = "Polaprint"
+            ReferencedContainer = "container:Polaprint.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct OpenInstaxApp: App {
+struct PolaprintApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

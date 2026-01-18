@@ -27,23 +27,12 @@ struct PrinterStatusView: View {
 
   @ViewBuilder
   private func retrySection(onRetry: @escaping () -> Void) -> some View {
-    HStack(spacing: 8) {
-      Divider()
-        .frame(height: 16)
-        .padding(.leading, 4)
-
-      if secondsUntilRetry > 0 {
-        Text("\(secondsUntilRetry)s")
-          .monospacedDigit()
-          .foregroundStyle(.secondary)
-      }
-
-      Button("Retry") {
-        onRetry()
-      }
-      .buttonStyle(.bordered)
-      .controlSize(.small)
+    Button("Retry") {
+      onRetry()
     }
+    .buttonStyle(.bordered)
+    .controlSize(.small)
+    .padding(.leading, 8)
   }
 
   @ViewBuilder
